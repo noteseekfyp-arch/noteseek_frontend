@@ -1,7 +1,8 @@
 "use client"
 
-import StatCard from "@/components/stat-card"
-import TeacherCourseCard from "@/components/teacher-course-card"
+import StatCard from "@/components/stats/stat-card"
+import { TeacherCourseCard } from "@/components/course/teacher-course-card"
+import { CreateCourseModal } from "@/components/course/create-course-modal"
 import { Button } from "@/components/ui/button"
 import {
   Users,
@@ -25,10 +26,12 @@ export default function TeacherDashboard() {
 
         <div className="flex gap-3">
           <Button variant="outline">Filter</Button>
-          <Button>
-            <Plus className="mr-2 size-4" />
-            New Course
-          </Button>
+          <CreateCourseModal>
+            <Button>
+              <Plus className="mr-2 size-4" />
+              New Course
+            </Button>
+          </CreateCourseModal>
         </div>
       </div>
 
@@ -66,6 +69,7 @@ export default function TeacherDashboard() {
           students={32}
           updated="2h ago"
           category="Calculus"
+          href="/teacher/courses/MATH301"
         />
 
         <TeacherCourseCard
@@ -73,6 +77,7 @@ export default function TeacherDashboard() {
           students={28}
           updated="1d ago"
           category="Theoretical"
+          href="/teacher/courses/PHYS401"
         />
 
         <TeacherCourseCard
@@ -80,6 +85,7 @@ export default function TeacherDashboard() {
           students={45}
           updated="3d ago"
           category="Math"
+          href="/teacher/courses/MATH201"
         />
 
         <TeacherCourseCard
@@ -87,18 +93,21 @@ export default function TeacherDashboard() {
           students={50}
           updated="5d ago"
           category="General"
+          href="/teacher/courses/MATH101"
         />
 
         {/* Add New Course Card */}
-        <div className="border-2 border-dashed rounded-xl flex flex-col items-center justify-center h-64 bg-muted/40 hover:bg-muted/60 transition cursor-pointer">
-          <div className="flex size-12 items-center justify-center rounded-full bg-white shadow-sm text-primary mb-3">
-            <Plus className="size-5" />
+        <CreateCourseModal>
+          <div className="border-2 border-dashed rounded-xl flex flex-col items-center justify-center h-64 bg-muted/40 hover:bg-muted/60 transition cursor-pointer">
+            <div className="flex size-12 items-center justify-center rounded-full bg-white shadow-sm text-primary mb-3">
+              <Plus className="size-5" />
+            </div>
+            <p className="font-semibold">Add New Course</p>
+            <p className="mt-1 text-sm text-muted-foreground max-w-[14rem] text-center">
+              Expand your curriculum by creating a new academic space.
+            </p>
           </div>
-          <p className="font-semibold">Add New Course</p>
-          <p className="mt-1 text-sm text-muted-foreground max-w-[14rem] text-center">
-            Expand your curriculum by creating a new academic space.
-          </p>
-        </div>
+        </CreateCourseModal>
       </div>
     </div>
   )
