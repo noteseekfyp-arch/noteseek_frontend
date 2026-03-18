@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Building2, BookA, Clock, Users } from "lucide-react"
+import { ContextSelectionModal } from "@/components/generation/context-selection-modal"
 
 // Mock Data
 const MOCK_FILES = [
@@ -128,7 +129,9 @@ export default function TeacherCoursePage() {
                 <CardDescription>Create assessments based on uploaded materials.</CardDescription>
               </CardHeader>
               <CardFooter>
-                <Button className="w-full" variant="secondary">Start Generation</Button>
+                <ContextSelectionModal defaultType="Quiz">
+                  <Button className="w-full" variant="secondary">Start Generation</Button>
+                </ContextSelectionModal>
               </CardFooter>
             </Card>
 
@@ -139,7 +142,9 @@ export default function TeacherCoursePage() {
                 <CardDescription>Create complex assignments and rubrics.</CardDescription>
               </CardHeader>
               <CardFooter>
-                <Button className="w-full" variant="secondary">Start Generation</Button>
+                <ContextSelectionModal defaultType="Assignment">
+                  <Button className="w-full" variant="secondary">Start Generation</Button>
+                </ContextSelectionModal>
               </CardFooter>
             </Card>
 
@@ -150,7 +155,9 @@ export default function TeacherCoursePage() {
                 <CardDescription>Synthesize long documents into quick notes.</CardDescription>
               </CardHeader>
               <CardFooter>
-                <Button className="w-full" variant="secondary">Start Generation</Button>
+                <ContextSelectionModal defaultType="Summary">
+                  <Button className="w-full" variant="secondary">Start Generation</Button>
+                </ContextSelectionModal>
               </CardFooter>
             </Card>
           </div>
