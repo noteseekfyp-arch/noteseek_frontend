@@ -36,7 +36,7 @@ export function ContextSelectionModal({
   availableFiles = DEFAULT_FILES,
 }: ContextSelectionModalProps) {
   const [open, setOpen] = useState(false)
-  const [selectedFile, setSelectedFile] = useState(availableFiles[0]?.id)
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([availableFiles[0]?.id].filter(Boolean))
   const [rangeType, setRangeType] = useState("all") // "all" | "custom"
   const [customRange, setCustomRange] = useState("")
   const [focusArea, setFocusArea] = useState("")
@@ -47,7 +47,7 @@ export function ContextSelectionModal({
     
     console.log({
       type: defaultType,
-      file: selectedFile,
+      files: selectedFiles,
       rangeParameters: rangeType === "all" ? "All pages" : customRange,
       focusArea,
     })
@@ -73,8 +73,8 @@ export function ContextSelectionModal({
         )}
       </DialogTrigger>
       
-      <DialogContent className="sm:max-w-[600px] h-[90vh] sm:h-auto overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Bot className="size-5 text-primary" />
             Generate {defaultType}
@@ -84,7 +84,7 @@ export function ContextSelectionModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 px-6 py-4 overflow-y-auto flex-1 min-h-0">
           {/* Step 1: Select Material */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2">
@@ -92,27 +92,36 @@ export function ContextSelectionModal({
               Select Source Material
             </h3>
             <div className="grid gap-2 pl-8">
-              {availableFiles.map((file) => (
-                <div
-                  key={file.id}
-                  onClick={() => setSelectedFile(file.id)}
-                  className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${
-                    selectedFile === file.id
-                      ? "border-primary bg-primary/5"
-                      : "hover:bg-muted/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <FileText className={`size-4 ${selectedFile === file.id ? "text-primary" : "text-muted-foreground"}`} />
-                    <span className={`text-sm ${selectedFile === file.id ? "font-medium" : ""}`}>
-                      {file.name}
-                    </span>
+              {availableFiles.map((file) => {
+                const isSelected = selectedFiles.includes(file.id);
+                return (
+                  <div
+                    key={file.id}
+                    onClick={() => {
+                      setSelectedFiles(prev => 
+                        prev.includes(file.id) 
+                          ? prev.filter(id => id !== file.id)
+                          : [...prev, file.id]
+                      )
+                    }}
+                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${
+                      isSelected
+                        ? "border-primary bg-primary/5"
+                        : "hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileText className={`size-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className={`text-sm ${isSelected ? "font-medium" : ""}`}>
+                        {file.name}
+                      </span>
+                    </div>
+                    {isSelected && (
+                      <CheckCircle2 className="size-4 text-primary" />
+                    )}
                   </div>
-                  {selectedFile === file.id && (
-                    <CheckCircle2 className="size-4 text-primary" />
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
@@ -172,11 +181,11 @@ export function ContextSelectionModal({
           </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-2 sm:gap-0 px-6 pb-6 pt-2 shrink-0 border-t mt-auto">
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
           <Button 
             onClick={handleGenerate} 
-            disabled={!selectedFile || (rangeType === "custom" && !customRange.trim()) || isGenerating}
+            disabled={selectedFiles.length === 0 || (rangeType === "custom" && !customRange.trim()) || isGenerating}
             className="w-full sm:w-auto"
           >
             {isGenerating ? "Processing Document..." : (
