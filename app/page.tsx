@@ -25,8 +25,12 @@ export default function LandingPage() {
           </nav>
           
           <div className="flex items-center gap-4">
-            <Button variant="ghost" className="hidden sm:inline-flex font-medium">Log in</Button>
-            <Button className="font-semibold shadow-md shadow-primary/20">Get Started</Button>
+            <Button asChild variant="ghost" className="hidden sm:inline-flex font-medium">
+              <Link href="/login">Log in</Link>
+            </Button>
+            <Button asChild className="font-semibold shadow-md shadow-primary/20">
+              <Link href="/login">Get Started</Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -58,12 +62,12 @@ export default function LandingPage() {
             
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild size="lg" className="h-14 px-8 text-base shadow-lg shadow-blue-500/25 rounded-full hover:scale-105 transition-transform duration-300 w-full sm:w-auto">
-                <Link href="/student">
+                <Link href="/login">
                   Enter Student Portal <ArrowRight className="ml-2 size-5" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-14 px-8 text-base bg-white shadow-sm rounded-full w-full sm:w-auto hover:bg-slate-50">
-                <Link href="/teacher">
+                <Link href="/login">
                   Access Teacher Dashboard <GraduationCap className="ml-2 size-5" />
                 </Link>
               </Button>
@@ -105,7 +109,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <div className="mt-10">
-                  <Link href="/student" className="inline-flex items-center text-blue-600 font-semibold hover:text-blue-700">
+                  <Link href="/login" className="inline-flex items-center text-blue-600 font-semibold hover:text-blue-700">
                     Try the Student experience <ArrowRight className="ml-1 size-4" />
                   </Link>
                 </div>
@@ -134,7 +138,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <div className="mt-10">
-                  <Link href="/teacher" className="inline-flex items-center text-indigo-600 font-semibold hover:text-indigo-700">
+                  <Link href="/login" className="inline-flex items-center text-indigo-600 font-semibold hover:text-indigo-700">
                     Explore the Teacher tools <ArrowRight className="ml-1 size-4" />
                   </Link>
                 </div>
