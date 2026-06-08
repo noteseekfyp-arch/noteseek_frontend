@@ -1,19 +1,35 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { FileText, Download, UploadCloud, Bot, Sparkles, Folder } from "lucide-react"
+import { motion } from "framer-motion"
+import {
+  FileText,
+  Download,
+  Bot,
+  Sparkles,
+  BookOpen,
+  ClipboardList,
+  Layers,
+  ArrowRight,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
 import { ContextSelectionModal } from "@/components/generation/context-selection-modal"
+import { PageHeader } from "@/components/layout/page-header"
+import { FadeIn, Stagger, StaggerItem } from "@/components/motion/fade-in"
+import { EmptyState } from "@/components/ui/empty-state"
+import { UploadZone } from "@/components/ui/upload-zone"
 import { contextPayloadToGenerate } from "@/features/ai/generation-handlers"
 import { MaterialApi } from "@/features/materials/api"
 import { NotesApi } from "@/features/notes/api"
 import type { Material } from "@/types/material"
 import type { Note } from "@/types/note"
+import { cn } from "@/lib/utils"
 
 function fmtDate(iso: string) {
   try {
@@ -23,6 +39,36 @@ function fmtDate(iso: string) {
   }
 }
 
+const KIND_STYLES: Record<string, { icon: typeof BookOpen; color: string }> = {
+  summary: { icon: BookOpen, color: "from-blue-500 to-indigo-600" },
+  quiz: { icon: ClipboardList, color: "from-violet-500 to-purple-600" },
+  flashcards: { icon: Layers, color: "from-fuchsia-500 to-pink-600" },
+  study_guide: { icon: Sparkles, color: "from-emerald-500 to-teal-600" },
+}
+
+function GenButton({
+  type,
+  files,
+  onGenerate,
+  variant = "outline",
+}: {
+  type: "Summary" | "Quiz" | "Flashcards"
+  files: { id: string; name: string }[]
+  onGenerate: (p: Parameters<typeof contextPayloadToGenerate>[0]) => Promise<void>
+  variant?: "default" | "outline" | "secondary"
+}) {
+  const icons = { Summary: BookOpen, Quiz: ClipboardList, Flashcards: Layers }
+  const Icon = icons[type]
+  return (
+    <ContextSelectionModal defaultType={type} availableFiles={files} onGenerate={onGenerate}>
+      <Button variant={variant} size="sm" className="gap-1.5 rounded-full" disabled={files.length === 0}>
+        <Icon className="size-3.5" />
+        {type === "Summary" ? "Notes" : type}
+      </Button>
+    </ContextSelectionModal>
+  )
+}
+
 export default function StudentNotesPage() {
   const [materials, setMaterials] = useState<Material[]>([])
   const [generated, setGenerated] = useState<Note[]>([])
@@ -30,15 +76,13 @@ export default function StudentNotesPage() {
   const [generatedLoading, setGeneratedLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
   const refresh = useCallback(async () => {
     setLoading(true)
     setLoadError(null)
     try {
-      const list = await MaterialApi.list(null)
-      setMaterials(list)
+      setMaterials(await MaterialApi.list(null))
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : "Failed to load files")
       setMaterials([])
@@ -71,15 +115,10 @@ export default function StudentNotesPage() {
     router.push(`/notes/${result.id}`)
   }
 
-  const handleUploadPick = () => fileRef.current?.click()
-
-  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    e.target.value = ""
-    if (!f) return
+  const onUpload = async (file: File) => {
     setUploading(true)
     try {
-      await MaterialApi.upload(f, null)
+      await MaterialApi.upload(file, null)
       await refresh()
     } catch (err) {
       window.alert(err instanceof Error ? err.message : "Upload failed")
@@ -89,184 +128,167 @@ export default function StudentNotesPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Study Vault</h1>
-        <p className="mt-1 text-muted-foreground">
-          Upload your own personal materials to generate smart summaries, flashcards, and study guides.
-        </p>
-      </div>
+    <div className="space-y-8 pb-8">
+      <PageHeader
+        eyebrow="Study vault"
+        title="My Study Vault"
+        description="Upload PDFs, then generate notes, quizzes, and flashcards powered by your local Ollama model."
+      />
 
       {loadError && (
-        <p className="text-sm text-destructive" role="alert">
+        <p className="text-sm text-destructive rounded-lg border border-destructive/20 bg-destructive/5 p-3" role="alert">
           {loadError}
         </p>
       )}
 
-      <input
-        ref={fileRef}
-        type="file"
-        accept="application/pdf,.pdf"
-        className="hidden"
-        onChange={(e) => void onFileChange(e)}
-      />
+      <FadeIn delay={0.05}>
+        <UploadZone uploading={uploading} onFile={onUpload} />
+      </FadeIn>
 
-      <Card className="border-dashed border-2 bg-muted/20">
-        <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-          <div className="p-4 rounded-full bg-primary/10 text-primary mb-4">
-            <UploadCloud className="size-8" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2">Upload a PDF</h3>
-          <p className="text-sm text-muted-foreground max-w-sm mb-6">
-            Upload lecture slides or notes, then generate study materials with Ollama (gemma3:4b) on your machine.
-          </p>
-          <Button onClick={handleUploadPick} disabled={uploading} className="px-8">
-            {uploading ? "Uploading…" : "Browse Files"}
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Tabs defaultValue="files" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-          <TabsTrigger value="files">My Uploaded Files</TabsTrigger>
-          <TabsTrigger value="generated">AI Generated Library</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="files" className="mt-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b">
-              <div>
-                <CardTitle>Personal Files</CardTitle>
-                <CardDescription>Generate study materials directly from your uploads.</CardDescription>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <ContextSelectionModal
-                  defaultType="Summary"
-                  availableFiles={modalFiles}
-                  onGenerate={handleGenerate}
-                >
-                  <Button variant="default" className="gap-2" disabled={modalFiles.length === 0}>
-                    <Sparkles className="size-4" /> Notes
-                  </Button>
-                </ContextSelectionModal>
-                <ContextSelectionModal
-                  defaultType="Quiz"
-                  availableFiles={modalFiles}
-                  onGenerate={handleGenerate}
-                >
-                  <Button variant="secondary" className="gap-2" disabled={modalFiles.length === 0}>
-                    Quiz
-                  </Button>
-                </ContextSelectionModal>
-                <ContextSelectionModal
-                  defaultType="Flashcards"
-                  availableFiles={modalFiles}
-                  onGenerate={handleGenerate}
-                >
-                  <Button variant="secondary" className="gap-2" disabled={modalFiles.length === 0}>
-                    Flashcards
-                  </Button>
-                </ContextSelectionModal>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {loading ? (
-                <p className="p-6 text-sm text-muted-foreground">Loading…</p>
-              ) : (
-                <div className="divide-y border-b">
-                  {materials.map((file) => (
-                    <div
-                      key={file.id}
-                      className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 rounded-lg bg-blue-50 text-blue-500">
-                          <FileText className="size-5" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm sm:text-base">{file.filename}</p>
-                          <p className="text-xs text-muted-foreground">{fmtDate(file.uploaded_at)}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 shrink-0 justify-end">
-                        <ContextSelectionModal
-                          defaultType="Summary"
-                          availableFiles={[{ id: file.id, name: file.filename }]}
-                          onGenerate={handleGenerate}
-                        >
-                          <Button variant="outline" size="sm">
-                            Notes
-                          </Button>
-                        </ContextSelectionModal>
-                        <ContextSelectionModal
-                          defaultType="Quiz"
-                          availableFiles={[{ id: file.id, name: file.filename }]}
-                          onGenerate={handleGenerate}
-                        >
-                          <Button variant="outline" size="sm">
-                            Quiz
-                          </Button>
-                        </ContextSelectionModal>
-                        <ContextSelectionModal
-                          defaultType="Flashcards"
-                          availableFiles={[{ id: file.id, name: file.filename }]}
-                          onGenerate={handleGenerate}
-                        >
-                          <Button variant="outline" size="sm">
-                            Flashcards
-                          </Button>
-                        </ContextSelectionModal>
-                        <Button variant="ghost" size="icon" className="text-muted-foreground" asChild>
-                          <a href={file.url} target="_blank" rel="noopener noreferrer">
-                            <Download className="size-4" />
-                          </a>
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-
-                  {materials.length === 0 && (
-                    <div className="p-8 text-center text-muted-foreground flex flex-col items-center">
-                      <Folder className="size-12 mb-3 text-muted" />
-                      <p>No files uploaded yet.</p>
-                    </div>
-                  )}
-                </div>
+      <FadeIn delay={0.1}>
+        <Tabs defaultValue="files" className="w-full">
+          <TabsList className="h-11 p-1 bg-white/80 shadow-sm border w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
+            <TabsTrigger value="files" className="rounded-lg px-6">
+              Uploaded files
+              {materials.length > 0 && (
+                <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">
+                  {materials.length}
+                </Badge>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </TabsTrigger>
+            <TabsTrigger value="generated" className="rounded-lg px-6">
+              AI library
+              {generated.length > 0 && (
+                <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">
+                  {generated.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="generated" className="mt-6">
-          {generatedLoading ? (
-            <p className="text-sm text-muted-foreground p-6">Loading generated library…</p>
-          ) : generated.length === 0 ? (
-            <div className="p-12 text-center border-2 border-dashed rounded-xl bg-muted/20 text-muted-foreground">
-              <Bot className="size-12 mx-auto mb-3 text-muted" />
-              <p className="font-medium text-foreground text-lg mb-1">No generated content</p>
-              <p className="text-sm">Generate summaries or flashcards from your uploads to see them here.</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {generated.map((item) => (
-                <Card key={item.id} className="hover:border-primary/40 transition-colors">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base line-clamp-1">{item.title}</CardTitle>
-                    <CardDescription className="capitalize">{item.kind?.replace("_", " ") ?? "Generated"}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-xs text-muted-foreground mb-4">{fmtDate(item.created_at)}</p>
-                    <Button asChild size="sm">
-                      <Link href={`/notes/${item.id}`}>Open</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="files" className="mt-6">
+            <Card className="border-0 shadow-lg shadow-indigo-500/5 bg-white/80 backdrop-blur-sm overflow-hidden">
+              <CardHeader className="border-b bg-gradient-to-r from-indigo-500/5 to-violet-500/5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <CardTitle>Your PDFs</CardTitle>
+                  <CardDescription>Pick a file and choose what to generate.</CardDescription>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <GenButton type="Summary" files={modalFiles} onGenerate={handleGenerate} variant="default" />
+                  <GenButton type="Quiz" files={modalFiles} onGenerate={handleGenerate} />
+                  <GenButton type="Flashcards" files={modalFiles} onGenerate={handleGenerate} />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {loading ? (
+                  <div className="p-8 space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="h-16 rounded-xl shimmer" />
+                    ))}
+                  </div>
+                ) : materials.length === 0 ? (
+                  <EmptyState
+                    icon={FileText}
+                    title="No PDFs yet"
+                    description="Upload your first lecture PDF above to start generating."
+                  />
+                ) : (
+                  <Stagger className="divide-y">
+                    {materials.map((file) => (
+                      <StaggerItem key={file.id}>
+                        <div className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 hover:bg-primary/[0.03] transition-colors">
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-violet-500/15 text-primary group-hover:scale-105 transition-transform">
+                              <FileText className="size-6" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{file.filename}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{fmtDate(file.uploaded_at)}</p>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                            <GenButton
+                              type="Summary"
+                              files={[{ id: file.id, name: file.filename }]}
+                              onGenerate={handleGenerate}
+                            />
+                            <GenButton
+                              type="Quiz"
+                              files={[{ id: file.id, name: file.filename }]}
+                              onGenerate={handleGenerate}
+                            />
+                            <GenButton
+                              type="Flashcards"
+                              files={[{ id: file.id, name: file.filename }]}
+                              onGenerate={handleGenerate}
+                            />
+                            <Button variant="ghost" size="icon" className="rounded-full" asChild>
+                              <a href={file.url} target="_blank" rel="noopener noreferrer">
+                                <Download className="size-4" />
+                              </a>
+                            </Button>
+                          </div>
+                        </div>
+                      </StaggerItem>
+                    ))}
+                  </Stagger>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="generated" className="mt-6">
+            {generatedLoading ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-36 rounded-2xl shimmer" />
+                ))}
+              </div>
+            ) : generated.length === 0 ? (
+              <EmptyState
+                icon={Bot}
+                title="No AI content yet"
+                description="Generate notes, a quiz, or flashcards from any uploaded PDF."
+              />
+            ) : (
+              <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {generated.map((item) => {
+                  const kind = item.kind ?? "summary"
+                  const style = KIND_STYLES[kind] ?? KIND_STYLES.summary
+                  const Icon = style.icon
+                  return (
+                    <StaggerItem key={item.id}>
+                      <Link href={`/notes/${item.id}`} className="block h-full">
+                        <Card className="h-full card-interactive border-0 shadow-md bg-white/90 overflow-hidden group">
+                          <div className={cn("h-1.5 bg-gradient-to-r", style.color)} />
+                          <CardHeader className="pb-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <div
+                                className={cn(
+                                  "flex size-10 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-sm",
+                                  style.color
+                                )}
+                              >
+                                <Icon className="size-5" />
+                              </div>
+                              <ArrowRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                            </div>
+                            <CardTitle className="text-base line-clamp-2 mt-3">{item.title}</CardTitle>
+                            <CardDescription className="capitalize">{kind.replace("_", " ")}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-xs text-muted-foreground">{fmtDate(item.created_at)}</p>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    </StaggerItem>
+                  )
+                })}
+              </Stagger>
+            )}
+          </TabsContent>
+        </Tabs>
+      </FadeIn>
     </div>
   )
 }

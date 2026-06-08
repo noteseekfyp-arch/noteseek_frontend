@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   FileText,
   BookOpen,
@@ -11,32 +12,35 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
+  ArrowLeft,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { FadeIn } from "@/components/motion/fade-in"
 import { NotesApi } from "@/features/notes/api"
 import type { Note } from "@/types/note"
+import { cn } from "@/lib/utils"
 
 function renderMarkdownish(text: string) {
   return text.split("\n").map((line, i) => {
     if (line.startsWith("## "))
       return (
-        <h2 key={i} className="text-xl font-semibold mt-6 mb-2">
+        <h2 key={i} className="text-xl font-semibold mt-6 mb-2 text-foreground">
           {line.slice(3)}
         </h2>
       )
     if (line.startsWith("### "))
       return (
-        <h3 key={i} className="text-lg font-medium mt-4 mb-2">
+        <h3 key={i} className="text-lg font-medium mt-4 mb-2 text-foreground">
           {line.slice(4)}
         </h3>
       )
     if (line.startsWith("- "))
       return (
-        <li key={i} className="ml-4 text-muted-foreground">
+        <li key={i} className="ml-4 text-muted-foreground list-disc">
           {line.slice(2)}
         </li>
       )
@@ -98,161 +102,190 @@ export default function AINotesPage() {
   const flashcards = note?.metadata?.flashcards ?? []
   const quizQuestions = note?.metadata?.quiz_questions ?? []
   const currentCard = flashcards[cardIndex]
-  const isQuiz = note?.kind === "quiz"
-  const isFlashcards = note?.kind === "flashcards"
 
   if (loading) {
-    return <p className="text-muted-foreground text-sm">Loading generated content…</p>
+    return (
+      <div className="space-y-4 max-w-3xl">
+        <div className="h-10 w-48 rounded-lg shimmer" />
+        <div className="h-64 rounded-2xl shimmer" />
+      </div>
+    )
   }
 
   if (error || !note) {
     return (
       <div className="space-y-4 max-w-xl">
         <p className="text-destructive text-sm">{error ?? "Note not found."}</p>
-        <Button asChild variant="outline">
-          <Link href="/student/notes">Back to vault</Link>
+        <Button asChild variant="outline" className="rounded-full">
+          <Link href="/student/notes">
+            <ArrowLeft className="size-4 mr-2" /> Back to vault
+          </Link>
         </Button>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-6rem)] max-w-7xl mx-auto space-y-4">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0">
+    <FadeIn className="space-y-6 pb-10">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold tracking-tight">{note.title}</h1>
+          <Button asChild variant="ghost" size="sm" className="mb-3 -ml-2 text-muted-foreground rounded-full">
+            <Link href="/student/notes">
+              <ArrowLeft className="size-4 mr-1" /> Vault
+            </Link>
+          </Button>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight gradient-text">{note.title}</h1>
             {note.is_generated && (
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
-                Generated
-              </Badge>
+              <Badge className="bg-primary/10 text-primary border-0">AI generated</Badge>
             )}
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
             <FileText className="size-4" />
             <span className="capitalize">{note.kind?.replace("_", " ") ?? "Note"}</span>
-          </div>
+          </p>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/student/notes">Back to vault</Link>
-        </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
-        <TabsList>
-          <TabsTrigger value="content">{isQuiz ? "Overview" : "Notes"}</TabsTrigger>
-          {!isFlashcards && (
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="h-auto flex-wrap gap-1 bg-white/80 shadow-sm border p-1.5 rounded-xl">
+          <TabsTrigger value="content" className="rounded-lg data-[state=active]:shadow-sm">
+            {note.kind === "quiz" ? "Overview" : "Notes"}
+          </TabsTrigger>
+          {note.kind !== "flashcards" && note.kind !== "quiz" && (
             <>
-              <TabsTrigger value="summary">Summary</TabsTrigger>
-              <TabsTrigger value="keypoints">Key Points</TabsTrigger>
+              <TabsTrigger value="summary" className="rounded-lg">Summary</TabsTrigger>
+              <TabsTrigger value="keypoints" className="rounded-lg">Key points</TabsTrigger>
             </>
           )}
-          {(flashcards.length > 0 || isFlashcards) && (
-            <TabsTrigger value="flashcards">Flashcards ({flashcards.length})</TabsTrigger>
+          {(flashcards.length > 0 || note.kind === "flashcards") && (
+            <TabsTrigger value="flashcards" className="rounded-lg gap-1">
+              <FileDigit className="size-3.5" /> {flashcards.length}
+            </TabsTrigger>
           )}
-          {(quizQuestions.length > 0 || isQuiz) && (
-            <TabsTrigger value="quiz">Quiz ({quizQuestions.length})</TabsTrigger>
+          {(quizQuestions.length > 0 || note.kind === "quiz") && (
+            <TabsTrigger value="quiz" className="rounded-lg gap-1">
+              <ClipboardList className="size-3.5" /> {quizQuestions.length}
+            </TabsTrigger>
           )}
         </TabsList>
 
-        <TabsContent value="content" className="mt-4">
-          <Card className="border-2">
+        <TabsContent value="content" className="mt-5">
+          <Card className="border-0 shadow-lg bg-white/90 overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-indigo-500 to-violet-500" />
             <CardHeader>
-              <CardTitle>{isQuiz ? "Quiz overview" : "Study notes"}</CardTitle>
-              <CardDescription>Generated from your uploaded PDF via Ollama.</CardDescription>
+              <CardTitle>Study content</CardTitle>
+              <CardDescription>Generated from your PDF via local Ollama.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-slate max-w-none">{renderMarkdownish(note.content)}</div>
+              <div className="prose prose-slate max-w-none rounded-xl bg-muted/30 p-6 sm:p-8">
+                {renderMarkdownish(note.content)}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="summary" className="mt-4">
-          <Card>
+        <TabsContent value="summary" className="mt-5">
+          <Card className="border-0 shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BookOpen className="size-4 text-primary" /> Brief summary
+                <BookOpen className="size-5 text-primary" /> Brief summary
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed">
                 {note.metadata.brief_summary || "No summary stored."}
               </p>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="keypoints" className="mt-4">
-          <Card>
+        <TabsContent value="keypoints" className="mt-5">
+          <Card className="border-0 shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="size-4 text-amber-500" /> Key takeaways
+                <Lightbulb className="size-5 text-amber-500" /> Key takeaways
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ul className="space-y-3 text-sm">
-                {(note.metadata.key_points ?? []).map((point, i) => (
-                  <li key={i} className="flex gap-3">
-                    <span className="font-bold text-primary">{i + 1}.</span>
-                    <span className="text-muted-foreground">{point}</span>
-                  </li>
-                ))}
-                {(note.metadata.key_points ?? []).length === 0 && (
-                  <p className="text-muted-foreground text-sm">No key points stored.</p>
-                )}
-              </ul>
+            <CardContent className="space-y-3">
+              {(note.metadata.key_points ?? []).map((point, i) => (
+                <div
+                  key={i}
+                  className="flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/5 to-transparent border border-amber-500/10"
+                >
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-amber-700 text-xs font-bold">
+                    {i + 1}
+                  </span>
+                  <span className="text-sm text-muted-foreground pt-0.5">{point}</span>
+                </div>
+              ))}
+              {(note.metadata.key_points ?? []).length === 0 && (
+                <p className="text-sm text-muted-foreground">No key points stored.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="flashcards" className="mt-4">
-          <Card className="max-w-lg mx-auto bg-slate-50 border-dashed">
+        <TabsContent value="flashcards" className="mt-5">
+          <Card className="max-w-md mx-auto border-0 shadow-xl bg-gradient-to-b from-violet-500/5 to-fuchsia-500/5">
             <CardHeader className="text-center">
               <CardTitle className="flex items-center justify-center gap-2">
-                <FileDigit className="size-4 text-violet-500" /> Flashcard deck
+                <FileDigit className="size-5 text-violet-600" /> Flashcards
               </CardTitle>
-              <CardDescription>{flashcards.length} cards</CardDescription>
+              <CardDescription>{flashcards.length} cards · click to flip</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="min-h-[200px] flex items-center justify-center perspective-[1000px]">
               {currentCard ? (
-                <button
+                <motion.button
                   type="button"
                   onClick={() => setShowBack((b) => !b)}
-                  className="w-full min-h-48 bg-white rounded-xl shadow-sm border p-6 flex items-center justify-center text-center hover:shadow-md transition"
+                  className="w-full min-h-48 cursor-pointer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-4">
-                      {showBack ? "Back" : "Front"}
-                    </p>
-                    <p className="font-medium text-lg">
-                      {showBack ? currentCard.back : currentCard.front}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-4">Click to flip</p>
-                  </div>
-                </button>
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={showBack ? "back" : "front"}
+                      initial={{ rotateY: 90, opacity: 0 }}
+                      animate={{ rotateY: 0, opacity: 1 }}
+                      exit={{ rotateY: -90, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="w-full min-h-48 rounded-2xl bg-white border-2 border-violet-200 shadow-lg p-8 flex flex-col items-center justify-center text-center"
+                    >
+                      <p className="text-xs font-bold uppercase tracking-widest text-violet-500 mb-4">
+                        {showBack ? "Answer" : "Question"}
+                      </p>
+                      <p className="font-medium text-lg text-foreground">
+                        {showBack ? currentCard.back : currentCard.front}
+                      </p>
+                    </motion.div>
+                  </AnimatePresence>
+                </motion.button>
               ) : (
-                <p className="text-sm text-muted-foreground text-center">No flashcards in this artifact.</p>
+                <p className="text-sm text-muted-foreground">No flashcards in this artifact.</p>
               )}
             </CardContent>
             {flashcards.length > 0 && (
-              <CardFooter className="flex justify-between">
+              <CardFooter className="flex justify-between border-t bg-white/50">
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="rounded-full"
                   disabled={cardIndex === 0}
                   onClick={() => {
                     setCardIndex((i) => i - 1)
                     setShowBack(false)
                   }}
                 >
-                  <ChevronLeft className="size-4" /> Previous
+                  <ChevronLeft className="size-4" /> Prev
                 </Button>
-                <span className="text-sm">
+                <span className="text-sm font-medium tabular-nums">
                   {cardIndex + 1} / {flashcards.length}
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="rounded-full"
                   disabled={cardIndex >= flashcards.length - 1}
                   onClick={() => {
                     setCardIndex((i) => i + 1)
@@ -266,47 +299,44 @@ export default function AINotesPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="quiz" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardList className="size-4 text-primary" /> Quiz questions
-              </CardTitle>
-              <CardDescription>{quizQuestions.length} multiple-choice questions</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {quizQuestions.map((q, i) => (
-                <div key={i} className="rounded-lg border p-4 space-y-3">
-                  <p className="font-medium">
-                    {i + 1}. {q.question}
-                  </p>
-                  <ul className="space-y-1 text-sm">
-                    {(q.options ?? []).map((opt, j) => (
-                      <li
-                        key={j}
-                        className={
-                          j === q.correct_index
-                            ? "text-green-700 font-medium"
-                            : "text-muted-foreground"
-                        }
-                      >
-                        {String.fromCharCode(65 + j)}. {opt}
-                        {j === q.correct_index ? " ✓" : ""}
-                      </li>
-                    ))}
-                  </ul>
+        <TabsContent value="quiz" className="mt-5">
+          <div className="space-y-4">
+            {quizQuestions.map((q, i) => (
+              <Card key={i} className="border-0 shadow-md overflow-hidden card-interactive">
+                <div className="h-0.5 bg-gradient-to-r from-violet-500 to-purple-500" />
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-medium leading-snug">
+                    <span className="text-primary mr-2">Q{i + 1}.</span>
+                    {q.question}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {(q.options ?? []).map((opt, j) => (
+                    <div
+                      key={j}
+                      className={cn(
+                        "rounded-lg px-3 py-2 text-sm border",
+                        j === q.correct_index
+                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-800 font-medium"
+                          : "bg-muted/30 border-transparent text-muted-foreground"
+                      )}
+                    >
+                      <span className="font-mono text-xs mr-2 opacity-60">{String.fromCharCode(65 + j)}</span>
+                      {opt}
+                    </div>
+                  ))}
                   {q.explanation && (
-                    <p className="text-xs text-muted-foreground border-t pt-2">{q.explanation}</p>
+                    <p className="text-xs text-muted-foreground pt-2 border-t mt-2">{q.explanation}</p>
                   )}
-                </div>
-              ))}
-              {quizQuestions.length === 0 && (
-                <p className="text-sm text-muted-foreground">No quiz questions in this artifact.</p>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            ))}
+            {quizQuestions.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">No quiz questions stored.</p>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </FadeIn>
   )
 }

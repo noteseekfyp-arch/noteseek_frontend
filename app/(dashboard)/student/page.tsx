@@ -3,19 +3,19 @@
 import CourseCard from "@/components/course/course-card"
 import Link from "next/link"
 import { BadgeCheck, Globe, SlidersHorizontal } from "lucide-react"
+import { PageHeader } from "@/components/layout/page-header"
+import { FadeIn } from "@/components/motion/fade-in"
 
 export default function StudentDashboard() {
   return (
-    <div className="space-y-12">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-4xl font-bold tracking-tight">Student Dashboard</h1>
-        <p className="mt-1 text-muted-foreground">
-          Welcome back! Here's your academic overview for today.
-        </p>
-      </div>
+    <div className="space-y-12 pb-8">
+      <PageHeader
+        eyebrow="Welcome back"
+        title="Student Dashboard"
+        description="Explore courses, manage your study vault, and generate AI materials."
+      />
 
-      {/* Recommended Section */}
+      <FadeIn delay={0.05}>
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -63,7 +63,9 @@ export default function StudentDashboard() {
         </div>
       </section>
 
-      {/* Trending Section */}
+      </FadeIn>
+
+      <FadeIn delay={0.1}>
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -126,6 +128,7 @@ export default function StudentDashboard() {
           />
         </div>
       </section>
+      </FadeIn>
     </div>
   )
 }

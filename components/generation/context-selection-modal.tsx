@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import type { ReactNode } from "react"
-import { Bot, FileText, CheckCircle2, ChevronRight, Wand2 } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Bot, FileText, CheckCircle2, ChevronRight, Wand2, Loader2, Sparkles } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { cn } from "@/lib/utils"
 
 export type ContextGeneratePayload = {
   type: string
@@ -31,8 +33,14 @@ interface ContextSelectionModalProps {
   children?: ReactNode
   defaultType?: "Quiz" | "Assignment" | "Summary" | "Flashcards"
   availableFiles?: { id: string; name: string }[]
-  /** When set, runs instead of a no-op (wire to `POST /api/ai/generate` later). */
   onGenerate?: (payload: ContextGeneratePayload) => Promise<void>
+}
+
+const TYPE_COLORS: Record<string, string> = {
+  Quiz: "from-violet-500 to-purple-600",
+  Assignment: "from-amber-500 to-orange-600",
+  Summary: "from-blue-500 to-indigo-600",
+  Flashcards: "from-fuchsia-500 to-pink-600",
 }
 
 export function ContextSelectionModal({
@@ -80,128 +88,118 @@ export function ContextSelectionModal({
     }
   }
 
+  const gradient = TYPE_COLORS[defaultType] ?? TYPE_COLORS.Summary
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children || (
-          <Button variant="secondary">
+          <Button variant="secondary" className="rounded-full">
             <Wand2 className="mr-2 size-4" /> Generate {defaultType}
           </Button>
         )}
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 shrink-0">
-          <DialogTitle className="flex items-center gap-2">
-            <Bot className="size-5 text-primary" />
-            Generate {defaultType}
-          </DialogTitle>
-          <DialogDescription>
-            Select the source material and define the exact scope you want the AI to focus on for generation.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-[560px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-0 shadow-2xl">
+        <div className={cn("px-6 pt-6 pb-4 bg-gradient-to-br text-white", gradient)}>
+          <DialogHeader className="text-left space-y-2">
+            <DialogTitle className="flex items-center gap-2 text-white text-xl">
+              <Sparkles className="size-5" />
+              Generate {defaultType}
+            </DialogTitle>
+            <DialogDescription className="text-white/80">
+              Choose sources and focus — Ollama will build this on your laptop.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <div className="space-y-6 px-6 py-4 overflow-y-auto flex-1 min-h-0">
+        <div className="space-y-6 px-6 py-5 overflow-y-auto flex-1 min-h-0 bg-white">
           {availableFiles.length === 0 && (
-            <p className="text-sm text-muted-foreground rounded-lg border bg-muted/30 p-3">
-              No materials available yet. Upload files to this course (or your vault) first, then return here.
+            <p className="text-sm text-muted-foreground rounded-xl border bg-muted/30 p-4">
+              Upload a PDF first, then return here to generate.
             </p>
           )}
 
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">
-                1
-              </span>
-              Select Source Material
-            </h3>
-            <div className="grid gap-2 pl-8">
+          <section className="space-y-3">
+            <StepLabel n={1} title="Source material" />
+            <div className="grid gap-2">
               {availableFiles.map((file) => {
                 const isSelected = selectedFiles.includes(file.id)
                 return (
-                  <div
+                  <motion.button
                     key={file.id}
+                    type="button"
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       setSelectedFiles((prev) =>
                         prev.includes(file.id) ? prev.filter((id) => id !== file.id) : [...prev, file.id]
                       )
                     }}
-                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${
-                      isSelected ? "border-primary bg-primary/5" : "hover:bg-muted/50"
-                    }`}
+                    className={cn(
+                      "flex items-center justify-between p-3.5 rounded-xl border-2 text-left transition-all",
+                      isSelected
+                        ? "border-primary bg-primary/5 shadow-sm"
+                        : "border-transparent bg-muted/40 hover:bg-muted/60"
+                    )}
                   >
-                    <div className="flex items-center gap-3">
-                      <FileText className={`size-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
-                      <span className={`text-sm ${isSelected ? "font-medium" : ""}`}>{file.name}</span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <FileText className={cn("size-4 shrink-0", isSelected ? "text-primary" : "text-muted-foreground")} />
+                      <span className={cn("text-sm truncate", isSelected && "font-medium")}>{file.name}</span>
                     </div>
-                    {isSelected && <CheckCircle2 className="size-4 text-primary" />}
-                  </div>
+                    <AnimatePresence>
+                      {isSelected && (
+                        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                          <CheckCircle2 className="size-5 text-primary" />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
                 )
               })}
             </div>
-          </div>
+          </section>
 
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">
-                2
-              </span>
-              What parts of the document?
-            </h3>
-            <div className="pl-8">
-              <RadioGroup value={rangeType} onValueChange={setRangeType} className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="all" id="all-pages" />
-                  <Label htmlFor="all-pages">Read entire document</Label>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-2">
-                    <RadioGroupItem value="custom" id="custom-pages" className="mt-1" />
-                    <div className="space-y-2 w-full pr-4">
-                      <Label htmlFor="custom-pages" className="leading-5 block">
-                        Specific Pages / Slides
-                      </Label>
-                      {rangeType === "custom" && (
-                        <Input
-                          autoFocus
-                          placeholder="e.g. 1-5, 8, 11-13"
-                          value={customRange}
-                          onChange={(e) => setCustomRange(e.target.value)}
-                          className="h-9"
-                        />
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        Use this to restrict generation to a specific topic or lecture section.
-                      </p>
-                    </div>
+          <section className="space-y-3">
+            <StepLabel n={2} title="Scope" />
+            <RadioGroup value={rangeType} onValueChange={setRangeType} className="space-y-3 pl-1">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="all" id="all-pages" />
+                <Label htmlFor="all-pages">Entire document</Label>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-start space-x-2">
+                  <RadioGroupItem value="custom" id="custom-pages" className="mt-1" />
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="custom-pages">Specific pages</Label>
+                    {rangeType === "custom" && (
+                      <Input
+                        autoFocus
+                        placeholder="e.g. 1-5, 8"
+                        value={customRange}
+                        onChange={(e) => setCustomRange(e.target.value)}
+                        className="rounded-lg"
+                      />
+                    )}
                   </div>
                 </div>
-              </RadioGroup>
-            </div>
-          </div>
+              </div>
+            </RadioGroup>
+          </section>
 
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">
-                3
-              </span>
-              Additional Instructions (Optional)
-            </h3>
-            <div className="pl-8">
-              <Textarea
-                placeholder="e.g. Focus specifically on the time complexity of the sorting algorithms..."
-                className="resize-none h-20"
-                value={focusArea}
-                onChange={(e) => setFocusArea(e.target.value)}
-              />
-            </div>
-          </div>
+          <section className="space-y-3">
+            <StepLabel n={3} title="Focus (optional)" />
+            <Textarea
+              placeholder="e.g. Focus on definitions and formulas only…"
+              className="resize-none min-h-20 rounded-xl"
+              value={focusArea}
+              onChange={(e) => setFocusArea(e.target.value)}
+            />
+          </section>
         </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-row sm:gap-0 px-6 pb-6 pt-2 shrink-0 border-t mt-auto">
-          {localError && <p className="text-sm text-destructive w-full sm:order-first">{localError}</p>}
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        <DialogFooter className="flex-col gap-2 sm:flex-row px-6 py-4 border-t bg-muted/20">
+          {localError && <p className="text-sm text-destructive w-full">{localError}</p>}
+          <Button variant="outline" onClick={() => setOpen(false)} className="rounded-full">
             Cancel
           </Button>
           <Button
@@ -211,18 +209,32 @@ export function ContextSelectionModal({
               (rangeType === "custom" && !customRange.trim()) ||
               isGenerating
             }
-            className="w-full sm:w-auto"
+            className="rounded-full min-w-[140px]"
           >
             {isGenerating ? (
-              "Generating with Ollama… (may take a few minutes)"
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Generating…
+              </>
             ) : (
               <>
-                Continue <ChevronRight className="ml-2 size-4" />
+                Generate <ChevronRight className="size-4" />
               </>
             )}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function StepLabel({ n, title }: { n: number; title: string }) {
+  return (
+    <h3 className="text-sm font-semibold flex items-center gap-2">
+      <span className="flex size-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+        {n}
+      </span>
+      {title}
+    </h3>
   )
 }

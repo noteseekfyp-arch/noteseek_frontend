@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles, Bot, ChevronRight, GraduationCap, UploadCloud } from "lucide-react"
+import { motion } from "framer-motion"
+import { Sparkles, ChevronRight, GraduationCap, UploadCloud, BookOpen, ClipboardList, Layers, Loader2 } from "lucide-react"
+import { PageHeader } from "@/components/layout/page-header"
+import { FadeIn } from "@/components/motion/fade-in"
+import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -101,27 +105,30 @@ export default function StudentAIGeneratorPage() {
 
   const materialOptions = sourceType === "course" ? courseMaterials : personalMaterials
 
+  const typeOptions = [
+    { id: "Flashcards", icon: Layers, color: "from-fuchsia-500 to-pink-500" },
+    { id: "Summary", icon: BookOpen, color: "from-blue-500 to-indigo-500" },
+    { id: "Practice Quiz", icon: ClipboardList, color: "from-violet-500 to-purple-500" },
+    { id: "Study Guide", icon: Sparkles, color: "from-emerald-500 to-teal-500" },
+  ] as const
+
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg text-primary">
-            <Sparkles className="size-6" />
-          </div>
-          Global AI Generator
-        </h1>
-        <p className="mt-2 text-muted-foreground text-lg">
-          Configure a generation request. Content is produced by your self-hosted Ollama instance via the NoteSeek API.
-        </p>
-      </div>
+    <div className="space-y-8 max-w-4xl mx-auto pb-8">
+      <PageHeader
+        eyebrow="AI studio"
+        title="AI Generator"
+        description="Build notes, quizzes, flashcards, or study guides from your course or personal PDFs."
+      />
 
       {notice && (
-        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3" role="status">
+        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-4" role="status">
           {notice}
         </p>
       )}
 
-      <Card className="border-2 shadow-sm">
+      <FadeIn>
+      <Card className="border-0 shadow-xl bg-white/90 overflow-hidden">
+        <div className="h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
         <CardHeader className="bg-muted/20 border-b pb-6">
           <CardTitle>Configure Your Generation</CardTitle>
           <CardDescription>Follow the steps below to instruct the AI what to build for you.</CardDescription>
@@ -135,20 +142,32 @@ export default function StudentAIGeneratorPage() {
               </span>
               What would you like to build?
             </h3>
-            <div className="pl-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-              {["Flashcards", "Summary", "Practice Quiz", "Study Guide"].map((type) => (
-                <div
-                  key={type}
-                  onClick={() => setGenerationType(type)}
-                  className={`border-2 rounded-xl p-4 cursor-pointer text-center transition-all ${
-                    generationType === type
-                      ? "border-primary bg-primary/5 text-primary shadow-sm"
-                      : "border-muted hover:border-primary/40 text-muted-foreground hover:text-foreground hover:bg-muted/20"
-                  }`}
+            <div className="pl-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+              {typeOptions.map(({ id, icon: Icon, color }) => (
+                <motion.button
+                  key={id}
+                  type="button"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setGenerationType(id)}
+                  className={cn(
+                    "rounded-2xl p-4 text-center border-2 transition-all",
+                    generationType === id
+                      ? "border-primary shadow-lg shadow-primary/15 bg-primary/5"
+                      : "border-transparent bg-muted/50 hover:bg-muted"
+                  )}
                 >
-                  <Bot className={`size-6 mx-auto mb-2 ${generationType === type ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className="font-medium text-sm">{type}</span>
-                </div>
+                  <div
+                    className={cn(
+                      "mx-auto mb-2 flex size-10 items-center justify-center rounded-xl bg-gradient-to-br text-white",
+                      color,
+                      generationType !== id && "opacity-60 grayscale"
+                    )}
+                  >
+                    <Icon className="size-5" />
+                  </div>
+                  <span className={cn("font-medium text-sm", generationType === id && "text-primary")}>{id}</span>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -262,7 +281,12 @@ export default function StudentAIGeneratorPage() {
               (sourceType === "personal" && !selectedMaterial)
             }
           >
-            {isGenerating ? "AI is working…" : (
+            {isGenerating ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Generating with Ollama…
+              </>
+            ) : (
               <>
                 Generate {generationType} <ChevronRight className="ml-2 size-4" />
               </>
@@ -270,6 +294,7 @@ export default function StudentAIGeneratorPage() {
           </Button>
         </CardFooter>
       </Card>
+      </FadeIn>
     </div>
   )
 }
