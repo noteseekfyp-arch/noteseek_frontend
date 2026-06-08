@@ -47,29 +47,29 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
             variants={{
-              hidden: { opacity: 0, y: 30 },
-              visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.15, ease: "easeOut", duration: 0.6 } }
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } }
             }}
             className="container mx-auto px-4 md:px-6 text-center"
           >
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+            <motion.div variants={{ hidden: { opacity: 0, y: 30, filter: "blur(10px)", scale: 0.9 }, visible: { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, transition: { type: "spring", bounce: 0.5, duration: 0.8 } } }}>
               <Badge variant="outline" className="mb-6 py-1.5 px-4 bg-white/50 backdrop-blur-sm border-primary/20 text-primary font-medium tracking-wide">
                 <Sparkles className="size-3.5 mr-2 inline" /> Introducing NoteSeek 2.0
               </Badge>
             </motion.div>
             
-            <motion.h1 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="max-w-4xl mx-auto text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+            <motion.h1 variants={{ hidden: { opacity: 0, y: 40, filter: "blur(20px)", scale: 0.95 }, visible: { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, transition: { type: "spring", bounce: 0.4, duration: 1 } } }} className="max-w-4xl mx-auto text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
               The AI-Powered Hub for <br className="hidden sm:block" /> 
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
                 Modern Education
               </span>
             </motion.h1>
             
-            <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="max-w-2xl mx-auto mt-6 text-lg md:text-xl text-slate-600 leading-relaxed">
+            <motion.p variants={{ hidden: { opacity: 0, y: 20, filter: "blur(10px)" }, visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring", bounce: 0.3, duration: 0.8 } } }} className="max-w-2xl mx-auto mt-6 text-lg md:text-xl text-slate-600 leading-relaxed">
               Transform static lectures into interactive study material. Teachers upload content effortlessly, while students generate bespoke flashcards, summaries, and quizzes on demand.
             </motion.p>
             
-            <motion.div variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <motion.div variants={{ hidden: { opacity: 0, y: 20, filter: "blur(10px)", scale: 0.9 }, visible: { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, transition: { type: "spring", bounce: 0.4, duration: 0.8 } } }} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild size="lg" className="h-14 px-8 text-base shadow-lg shadow-blue-500/25 rounded-full hover:scale-105 transition-transform duration-300 w-full sm:w-auto">
                 <Link href="/login">
                   Enter Student Portal <ArrowRight className="ml-2 size-5" />
@@ -90,10 +90,10 @@ export default function LandingPage() {
         <section id="features" className="py-24 bg-white">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div 
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 50, filter: "blur(10px)", scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
               viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.7 }}
+              transition={{ type: "spring", bounce: 0.4, duration: 1 }}
               className="text-center mb-16"
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-4">One Platform. Two Powerful Perspectives.</h2>
@@ -103,11 +103,11 @@ export default function LandingPage() {
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 max-w-6xl mx-auto">
               {/* For Students Card */}
               <motion.div 
-                initial={{ opacity: 0, x: -40 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, x: -60, filter: "blur(15px)", rotateY: 10 }}
+                whileInView={{ opacity: 1, x: 0, filter: "blur(0px)", rotateY: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="group relative rounded-3xl border bg-slate-50 p-8 md:p-10 overflow-hidden hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300"
+                transition={{ type: "spring", bounce: 0.3, duration: 1, delay: 0.1 }}
+                className="group relative rounded-3xl border bg-slate-50 p-8 md:p-10 overflow-hidden hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 transform perspective-1000"
               >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100 rounded-full blur-[80px] -z-10 group-hover:bg-blue-200 transition-colors" />
                 <div className="size-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center mb-6 shadow-md shadow-blue-600/20">
@@ -138,11 +138,11 @@ export default function LandingPage() {
 
               {/* For Teachers Card */}
               <motion.div 
-                initial={{ opacity: 0, x: 40 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, x: 60, filter: "blur(15px)", rotateY: -10 }}
+                whileInView={{ opacity: 1, x: 0, filter: "blur(0px)", rotateY: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="group relative rounded-3xl border bg-slate-50 p-8 md:p-10 overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300"
+                transition={{ type: "spring", bounce: 0.3, duration: 1, delay: 0.2 }}
+                className="group relative rounded-3xl border bg-slate-50 p-8 md:p-10 overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-300 transform perspective-1000"
               >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-100 rounded-full blur-[80px] -z-10 group-hover:bg-indigo-200 transition-colors" />
                 <div className="size-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mb-6 shadow-md shadow-indigo-600/20">
@@ -180,10 +180,10 @@ export default function LandingPage() {
            <div className="container mx-auto px-4 md:px-6 relative z-10">
               <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24 max-w-6xl mx-auto">
                  <motion.div 
-                   initial={{ opacity: 0, y: 30 }}
-                   whileInView={{ opacity: 1, y: 0 }}
+                   initial={{ opacity: 0, y: 50, filter: "blur(20px)" }}
+                   whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                    viewport={{ once: true }}
-                   transition={{ duration: 0.6 }}
+                   transition={{ type: "spring", bounce: 0.4, duration: 1 }}
                    className="lg:w-1/2 space-y-6"
                  >
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-blue-300 font-medium text-sm backdrop-blur-md border border-white/10">
@@ -201,11 +201,11 @@ export default function LandingPage() {
                  </motion.div>
                  
                  <motion.div 
-                   initial={{ opacity: 0, scale: 0.9, rotateX: 10 }}
-                   whileInView={{ opacity: 1, scale: 1, rotateX: 0 }}
+                   initial={{ opacity: 0, scale: 0.8, rotateX: 30, rotateY: -20, filter: "blur(20px)", z: -500 }}
+                   whileInView={{ opacity: 1, scale: 1, rotateX: 5, rotateY: -5, filter: "blur(0px)", z: 0 }}
                    viewport={{ once: true }}
-                   transition={{ duration: 0.7, delay: 0.2 }}
-                   className="lg:w-1/2 w-full perspective-1000"
+                   transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.3 }}
+                   className="lg:w-1/2 w-full perspective-1000 transform-style-3d hover:rotate-3d transition-all duration-700 hover:scale-105"
                  >
                     {/* Mock UI Frame */}
                     <div className="rounded-2xl border border-white/10 bg-slate-800/50 backdrop-blur-xl p-2 shadow-2xl">

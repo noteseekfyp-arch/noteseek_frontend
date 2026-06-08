@@ -16,12 +16,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { CourseApi } from "@/features/courses/api"
+import type { Course } from "@/types/course"
 
 interface CreateCourseModalProps {
     children?: ReactNode
+    onCourseCreated?: (course: Course) => void
 }
 
-export function CreateCourseModal({ children }: CreateCourseModalProps) {
+export function CreateCourseModal({ children, onCourseCreated }: CreateCourseModalProps) {
     const [open, setOpen] = useState(false)
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
@@ -37,20 +40,23 @@ export function CreateCourseModal({ children }: CreateCourseModalProps) {
 
         setLoading(true)
         try {
-            // API integration to be added here
-            console.log({ title, description, university, department, semester, visibility })
-
-            // Artificial delay for UI feel
-            await new Promise(resolve => setTimeout(resolve, 800))
+            const created = await CourseApi.createCourse({
+                title,
+                description,
+                university,
+                department,
+                semester,
+                visibility,
+            })
 
             setOpen(false)
-            // Reset form
             setTitle("")
             setDescription("")
             setUniversity("")
             setDepartment("")
             setSemester("")
             setVisibility("public")
+            onCourseCreated?.(created)
         } catch (error) {
             console.error(error)
         } finally {

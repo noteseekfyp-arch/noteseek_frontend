@@ -1,41 +1,21 @@
 "use client"
 
+import { useEffect } from "react"
 import CourseCard from "@/components/course/course-card"
 import { GraduationCap, FolderSearch, Library } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useCourses } from "@/features/courses/hooks"
 
 export default function StudentCoursesPage() {
-  const MOCK_ENROLLED_COURSES = [
-    {
-      id: "cs101",
-      title: "Introduction to Computer Science",
-      teacher: "Prof. Anderson",
-      university: "Global University",
-      semester: "Fall 2024",
-      tag: "Computer Science",
-    },
-    {
-      id: "eng202",
-      title: "Advanced Literature",
-      teacher: "Dr. L. Jenkins",
-      university: "Global University",
-      semester: "Fall 2024",
-      tag: "English",
-    },
-    {
-      id: "phys101",
-      title: "Quantum Physics",
-      teacher: "Prof. Robert Chen",
-      university: "Stanford University",
-      semester: "Spring 2025",
-      tag: "Physics",
-    }
-  ]
+  const { courses, loading, error, fetchCourses } = useCourses()
+
+  useEffect(() => {
+    void fetchCourses()
+  }, [fetchCourses])
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -55,16 +35,24 @@ export default function StudentCoursesPage() {
         </Button>
       </div>
 
-      {MOCK_ENROLLED_COURSES.length > 0 ? (
+      {error && (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      )}
+
+      {loading ? (
+        <p className="text-muted-foreground text-sm">Loading courses…</p>
+      ) : courses.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {MOCK_ENROLLED_COURSES.map((course) => (
+          {courses.map((course) => (
             <CourseCard
               key={course.id}
               title={course.title}
               teacher={course.teacher}
               university={course.university}
               semester={course.semester}
-              tag={course.tag}
+              tag={course.department}
               href={`/student/courses/${course.id}`}
             />
           ))}
@@ -74,12 +62,11 @@ export default function StudentCoursesPage() {
           <Library className="size-16 mb-4 text-muted" />
           <h3 className="font-semibold text-foreground text-xl mb-2">No courses enrolled yet</h3>
           <p className="max-w-md mx-auto mb-6 text-sm">
-            It looks like you aren't enrolled in any courses for the current semester. Head over to the Explore page to find and enroll in new subjects!
+            It looks like you aren&apos;t enrolled in any courses for the current semester. Head over to the Explore page
+            to find public courses and enroll.
           </p>
           <Button asChild className="px-8 shadow-sm">
-            <Link href="/explore">
-              Explore Courses
-            </Link>
+            <Link href="/explore">Explore Courses</Link>
           </Button>
         </div>
       )}

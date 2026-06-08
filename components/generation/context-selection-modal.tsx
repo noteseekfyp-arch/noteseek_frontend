@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { ReactNode } from "react"
+import { useEffect, useState } from "react"
+import type { ReactNode } from "react"
 import { Bot, FileText, CheckCircle2, ChevronRight, Wand2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -19,48 +19,65 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
+export type ContextGeneratePayload = {
+  type: string
+  selectedFileIds: string[]
+  rangeType: string
+  customRange: string
+  focusArea: string
+}
+
 interface ContextSelectionModalProps {
   children?: ReactNode
   defaultType?: "Quiz" | "Assignment" | "Summary" | "Flashcards"
   availableFiles?: { id: string; name: string }[]
+  /** When set, runs instead of a no-op (wire to `POST /api/ai/generate` later). */
+  onGenerate?: (payload: ContextGeneratePayload) => Promise<void>
 }
-
-const DEFAULT_FILES = [
-  { id: "1", name: "Lecture_01_Introduction.pdf" },
-  { id: "2", name: "Chapter_3_Slides.pptx" },
-]
 
 export function ContextSelectionModal({
   children,
   defaultType = "Quiz",
-  availableFiles = DEFAULT_FILES,
+  availableFiles = [],
+  onGenerate,
 }: ContextSelectionModalProps) {
   const [open, setOpen] = useState(false)
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([availableFiles[0]?.id].filter(Boolean))
-  const [rangeType, setRangeType] = useState("all") // "all" | "custom"
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([])
+  const [rangeType, setRangeType] = useState("all")
   const [customRange, setCustomRange] = useState("")
   const [focusArea, setFocusArea] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    setLocalError(null)
+    const ids = availableFiles.map((f) => f.id)
+    setSelectedFiles(ids.length > 0 ? [ids[0]] : [])
+  }, [open, availableFiles])
 
   const handleGenerate = async () => {
-    setIsGenerating(true)
-    
-    console.log({
+    setLocalError(null)
+    const payload: ContextGeneratePayload = {
       type: defaultType,
-      files: selectedFiles,
-      rangeParameters: rangeType === "all" ? "All pages" : customRange,
+      selectedFileIds: selectedFiles,
+      rangeType,
+      customRange,
       focusArea,
-    })
-
-    // Simulate AI Generation
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    
-    setIsGenerating(false)
-    setOpen(false)
-    
-    // In a real app, we might redirect to a generation progress page or the generated notes page
-    // window.location.href = `/notes/generated-id-123`
-    alert(`Successfully generated ${defaultType}!`)
+    }
+    if (onGenerate) {
+      setIsGenerating(true)
+      try {
+        await onGenerate(payload)
+        setOpen(false)
+      } catch (e) {
+        setLocalError(e instanceof Error ? e.message : "Generation failed")
+      } finally {
+        setIsGenerating(false)
+      }
+    } else {
+      setOpen(false)
+    }
   }
 
   return (
@@ -72,7 +89,7 @@ export function ContextSelectionModal({
           </Button>
         )}
       </DialogTrigger>
-      
+
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 shrink-0">
           <DialogTitle className="flex items-center gap-2">
@@ -85,50 +102,50 @@ export function ContextSelectionModal({
         </DialogHeader>
 
         <div className="space-y-6 px-6 py-4 overflow-y-auto flex-1 min-h-0">
-          {/* Step 1: Select Material */}
+          {availableFiles.length === 0 && (
+            <p className="text-sm text-muted-foreground rounded-lg border bg-muted/30 p-3">
+              No materials available yet. Upload files to this course (or your vault) first, then return here.
+            </p>
+          )}
+
           <div className="space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">1</span>
+              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">
+                1
+              </span>
               Select Source Material
             </h3>
             <div className="grid gap-2 pl-8">
               {availableFiles.map((file) => {
-                const isSelected = selectedFiles.includes(file.id);
+                const isSelected = selectedFiles.includes(file.id)
                 return (
                   <div
                     key={file.id}
                     onClick={() => {
-                      setSelectedFiles(prev => 
-                        prev.includes(file.id) 
-                          ? prev.filter(id => id !== file.id)
-                          : [...prev, file.id]
+                      setSelectedFiles((prev) =>
+                        prev.includes(file.id) ? prev.filter((id) => id !== file.id) : [...prev, file.id]
                       )
                     }}
                     className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${
-                      isSelected
-                        ? "border-primary bg-primary/5"
-                        : "hover:bg-muted/50"
+                      isSelected ? "border-primary bg-primary/5" : "hover:bg-muted/50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <FileText className={`size-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
-                      <span className={`text-sm ${isSelected ? "font-medium" : ""}`}>
-                        {file.name}
-                      </span>
+                      <span className={`text-sm ${isSelected ? "font-medium" : ""}`}>{file.name}</span>
                     </div>
-                    {isSelected && (
-                      <CheckCircle2 className="size-4 text-primary" />
-                    )}
+                    {isSelected && <CheckCircle2 className="size-4 text-primary" />}
                   </div>
                 )
               })}
             </div>
           </div>
 
-          {/* Step 2: Select Scope/Range */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">2</span>
+              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">
+                2
+              </span>
               What parts of the document?
             </h3>
             <div className="pl-8">
@@ -137,7 +154,7 @@ export function ContextSelectionModal({
                   <RadioGroupItem value="all" id="all-pages" />
                   <Label htmlFor="all-pages">Read entire document</Label>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-start space-x-2">
                     <RadioGroupItem value="custom" id="custom-pages" className="mt-1" />
@@ -164,10 +181,11 @@ export function ContextSelectionModal({
             </div>
           </div>
 
-          {/* Step 3: Optional Focus Area */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">3</span>
+              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">
+                3
+              </span>
               Additional Instructions (Optional)
             </h3>
             <div className="pl-8">
@@ -181,14 +199,23 @@ export function ContextSelectionModal({
           </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0 px-6 pb-6 pt-2 shrink-0 border-t mt-auto">
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleGenerate} 
-            disabled={selectedFiles.length === 0 || (rangeType === "custom" && !customRange.trim()) || isGenerating}
+        <DialogFooter className="flex-col gap-2 sm:flex-row sm:gap-0 px-6 pb-6 pt-2 shrink-0 border-t mt-auto">
+          {localError && <p className="text-sm text-destructive w-full sm:order-first">{localError}</p>}
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => void handleGenerate()}
+            disabled={
+              selectedFiles.length === 0 ||
+              (rangeType === "custom" && !customRange.trim()) ||
+              isGenerating
+            }
             className="w-full sm:w-auto"
           >
-            {isGenerating ? "Processing Document..." : (
+            {isGenerating ? (
+              "Generating with Ollama… (may take a few minutes)"
+            ) : (
               <>
                 Continue <ChevronRight className="ml-2 size-4" />
               </>

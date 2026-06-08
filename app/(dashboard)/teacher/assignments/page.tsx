@@ -1,49 +1,85 @@
 "use client"
 
-import { useState } from "react"
-import { FilePlus2, Sparkles, CheckCircle2, ChevronRight, GraduationCap } from "lucide-react"
+import { useCallback, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { FilePlus2, Sparkles, Bot } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { CourseApi } from "@/features/courses/api"
+import { MaterialApi } from "@/features/materials/api"
+import { AiApi } from "@/features/ai/api"
+import type { Course } from "@/types/course"
+import type { Material } from "@/types/material"
 
 export default function TeacherCreateAssignmentPage() {
+  const [courses, setCourses] = useState<Course[]>([])
   const [selectedCourse, setSelectedCourse] = useState("")
+  const [materials, setMaterials] = useState<Material[]>([])
+  const [selectedMaterial, setSelectedMaterial] = useState("")
+  const [prompt, setPrompt] = useState("")
+  const [notice, setNotice] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [isCompleted, setIsCompleted] = useState(false)
+  const router = useRouter()
 
-  const handleCreate = () => {
+  const loadCourses = useCallback(async () => {
+    try {
+      setCourses(await CourseApi.getCourses())
+    } catch {
+      setCourses([])
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadCourses()
+  }, [loadCourses])
+
+  useEffect(() => {
+    if (!selectedCourse) {
+      setMaterials([])
+      setSelectedMaterial("")
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      try {
+        const m = await MaterialApi.list(selectedCourse)
+        if (!cancelled) setMaterials(m)
+      } catch {
+        if (!cancelled) setMaterials([])
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [selectedCourse])
+
+  const handleCreate = async () => {
+    setNotice(null)
     setIsGenerating(true)
-    setTimeout(() => {
+    try {
+      const sourceIds = selectedMaterial
+        ? [selectedMaterial]
+        : materials.map((m) => m.id)
+      if (sourceIds.length === 0) {
+        throw new Error("Upload at least one course material to use as context.")
+      }
+      const result = await AiApi.generate({
+        type: "assignment",
+        sourceMaterialIds: sourceIds,
+        prompt: prompt.trim() || undefined,
+        targetCourseId: selectedCourse,
+      })
+      router.push(`/notes/${result.id}`)
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : "Generation failed")
+    } finally {
       setIsGenerating(false)
-      setIsCompleted(true)
-    }, 2000)
-  }
-
-  if (isCompleted) {
-    return (
-      <div className="max-w-2xl mx-auto mt-12">
-        <Card className="text-center p-8 border-2 border-primary/20 shadow-lg">
-          <div className="flex justify-center mb-6">
-            <div className="p-4 rounded-full bg-primary/10 text-primary">
-              <CheckCircle2 className="size-12" />
-            </div>
-          </div>
-          <CardTitle className="text-3xl font-bold mb-2">Assignment Created!</CardTitle>
-          <CardDescription className="text-lg mb-8">
-            The AI has successfully generated the assignment rubric and sent it to all enrolled students.
-          </CardDescription>
-          
-          <div className="flex justify-center gap-4">
-            <Button onClick={() => window.location.href = "/teacher"}>Return to Dashboard</Button>
-            <Button variant="outline" onClick={() => setIsCompleted(false)}>Create Another</Button>
-          </div>
-        </Card>
-      </div>
-    )
+    }
   }
 
   return (
@@ -56,39 +92,49 @@ export default function TeacherCreateAssignmentPage() {
           AI Assignment Creator
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Let the AI draft comprehensive assignment requirements and rubrics based on your course materials.
+          Course and material lists come from the API. Rubric generation will call the AI route when it exists.
         </p>
       </div>
+
+      {notice && (
+        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">{notice}</p>
+      )}
 
       <Card className="border-2 shadow-sm">
         <CardHeader className="bg-muted/20 border-b pb-6">
           <CardTitle>Configuration Setup</CardTitle>
         </CardHeader>
-        
+
         <CardContent className="space-y-8 pt-8">
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label>Target Course</Label>
-              <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+              <Select value={selectedCourse} onValueChange={(v) => { setSelectedCourse(v); setSelectedMaterial("") }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select course..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cs101">Introduction to Computer Science</SelectItem>
-                  <SelectItem value="eng202">Advanced Literature</SelectItem>
+                  {courses.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.title}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Source Context (Optional)</Label>
-              <Select disabled={!selectedCourse}>
+              <Select value={selectedMaterial} onValueChange={setSelectedMaterial} disabled={!selectedCourse}>
                 <SelectTrigger>
-                  <SelectValue placeholder={selectedCourse ? "Select specific lecture/file..." : "Select course first"} />
+                  <SelectValue placeholder={selectedCourse ? "Select file…" : "Select course first"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="l1">Lecture 1 - Basics.pdf</SelectItem>
-                  <SelectItem value="l2">Chapter 3 Slides.pptx</SelectItem>
+                  {materials.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.filename}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -107,21 +153,32 @@ export default function TeacherCreateAssignmentPage() {
 
           <div className="space-y-2">
             <Label>AI Prompt / Assignment Focus</Label>
-            <Textarea 
-              placeholder="Describe what the students should do. E.g., 'Draft a 1000-word essay that compares arrays and linked lists, focusing on their memory allocation...'" 
+            <Textarea
+              placeholder="Describe what the students should do."
               className="resize-none h-32"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
             />
+          </div>
+
+          <div className="bg-muted/30 p-4 rounded-xl border flex gap-3 items-start">
+            <Bot className="size-5 shrink-0 mt-0.5" />
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Optional source file helps anchor the model to your uploaded material.
+            </p>
           </div>
         </CardContent>
         <CardFooter className="bg-muted/10 border-t p-6 flex justify-end">
-          <Button 
-            size="lg" 
-            onClick={handleCreate} 
+          <Button
+            size="lg"
+            onClick={() => void handleCreate()}
             disabled={isGenerating || !selectedCourse}
             className="w-full sm:w-auto min-w-[200px]"
           >
-            {isGenerating ? "Generating & Deploying..." : (
-               <>Generate via AI <Sparkles className="ml-2 size-4" /></>
+            {isGenerating ? "Generating…" : (
+              <>
+                Generate via AI <Sparkles className="ml-2 size-4" />
+              </>
             )}
           </Button>
         </CardFooter>

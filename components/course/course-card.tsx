@@ -40,8 +40,8 @@ export default function CourseCard({
             aria-label="Add course"
             className="absolute bottom-3 right-3 size-9 rounded-full bg-white shadow flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition"
             onClick={(e) => {
-              e.preventDefault();
-              alert("Add course functionality");
+              e.preventDefault()
+              e.stopPropagation()
             }}
           >
             <Plus className="size-4" />
