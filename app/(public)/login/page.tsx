@@ -7,7 +7,6 @@ import { Lock, Mail, Eye, EyeOff } from "lucide-react"
 
 import { useAuth } from "@/hooks/useAuth"
 import AuthHeader from "@/components/auth/auth-header"
-import RoleToggle, { type AuthRole } from "@/components/auth/role-toggle"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -16,7 +15,6 @@ import { Label } from "@/components/ui/label"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [role, setRole] = useState<AuthRole>("student")
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -47,7 +45,7 @@ export default function LoginPage() {
       />
 
       <main className="flex-1 flex items-center justify-center px-6 py-12">
-        <Card className="w-full max-w-md rounded-2xl shadow-lg border bg-card">
+        <Card className="w-full max-w-md rounded-2xl glass-card shadow-xl">
           <CardContent className="p-8 space-y-6">
             <div className="flex flex-col items-center text-center space-y-2">
               <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -58,8 +56,6 @@ export default function LoginPage() {
                 Log in to access your academic collaboration workspace.
               </p>
             </div>
-
-            <RoleToggle value={role} onChange={setRole} showIcons={false} />
 
             <div className="space-y-4">
               <div className="space-y-2">

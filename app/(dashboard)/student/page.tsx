@@ -4,11 +4,12 @@ import CourseCard from "@/components/course/course-card"
 import Link from "next/link"
 import { BadgeCheck, Globe, SlidersHorizontal } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { FadeIn } from "@/components/motion/fade-in"
 
 export default function StudentDashboard() {
   return (
-    <div className="space-y-12 pb-8">
+    <PageShell>
       <PageHeader
         eyebrow="Welcome back"
         title="Student Dashboard"
@@ -16,10 +17,10 @@ export default function StudentDashboard() {
       />
 
       <FadeIn delay={0.05}>
-      <section className="space-y-4">
+      <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <BadgeCheck className="size-5 text-primary" />
+          <h2 className="text-base font-semibold flex items-center gap-2">
+            <BadgeCheck className="size-4 text-primary" />
             Recommended from Stanford University
           </h2>
           <Link
@@ -30,7 +31,7 @@ export default function StudentDashboard() {
           </Link>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-4">
           <CourseCard
             title="Advanced Calculus"
             teacher="Dr. Sarah Jenkins"
@@ -66,10 +67,10 @@ export default function StudentDashboard() {
       </FadeIn>
 
       <FadeIn delay={0.1}>
-      <section className="space-y-4">
+      <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Globe className="size-5 text-primary" />
+          <h2 className="text-base font-semibold flex items-center gap-2">
+            <Globe className="size-4 text-primary" />
             Trending from Other Universities
           </h2>
           <div className="flex items-center gap-2">
@@ -90,7 +91,7 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-4 gap-4">
           <CourseCard
             title="Embedded Systems"
             teacher="Prof. Marcus Thorne"
@@ -129,6 +130,6 @@ export default function StudentDashboard() {
         </div>
       </section>
       </FadeIn>
-    </div>
+    </PageShell>
   )
 }

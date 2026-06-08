@@ -2,13 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { ClipboardCheck, Sparkles, Bot } from "lucide-react"
+import { Sparkles, Bot } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { CourseApi } from "@/features/courses/api"
 import { MaterialApi } from "@/features/materials/api"
 import { AiApi } from "@/features/ai/api"
@@ -74,29 +76,23 @@ export default function TeacherCreateQuizPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg text-primary">
-            <ClipboardCheck className="size-6" />
-          </div>
-          AI Quiz Generator
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Target course and materials are loaded from the API. Quizzes are generated via your self-hosted Ollama model.
-        </p>
-      </div>
+    <PageShell narrow>
+      <PageHeader
+        eyebrow="Quizzes"
+        title="AI Quiz Generator"
+        description="Target course and materials are loaded from the API. Quizzes are generated via your self-hosted Ollama model."
+      />
 
       {notice && (
-        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">{notice}</p>
+        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">{notice}</p>
       )}
 
-      <Card className="border-2 shadow-sm">
-        <CardHeader className="bg-muted/20 border-b pb-6">
+      <Card className="border-2 shadow-sm gap-3">
+        <CardHeader className="bg-muted/20 border-b py-3">
           <CardTitle>Quiz Parameters</CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-8 pt-8">
+        <CardContent className="space-y-5 pt-5">
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label>Target Course</Label>
@@ -168,6 +164,6 @@ export default function TeacherCreateQuizPage() {
           </Button>
         </CardFooter>
       </Card>
-    </div>
+    </PageShell>
   )
 }

@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { ContextSelectionModal } from "@/components/generation/context-selection-modal"
 import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/fade-in"
 import { EmptyState } from "@/components/ui/empty-state"
 import { UploadZone } from "@/components/ui/upload-zone"
@@ -128,7 +129,7 @@ export default function StudentNotesPage() {
   }
 
   return (
-    <div className="space-y-8 pb-8">
+    <PageShell>
       <PageHeader
         eyebrow="Study vault"
         title="My Study Vault"
@@ -147,8 +148,8 @@ export default function StudentNotesPage() {
 
       <FadeIn delay={0.1}>
         <Tabs defaultValue="files" className="w-full">
-          <TabsList className="h-11 p-1 bg-white/80 shadow-sm border w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
-            <TabsTrigger value="files" className="rounded-lg px-6">
+          <TabsList className="h-8 p-0.5 bg-white/80 shadow-sm border w-full sm:w-auto grid grid-cols-2 sm:inline-flex text-xs">
+            <TabsTrigger value="files" className="rounded-md px-4 py-1">
               Uploaded files
               {materials.length > 0 && (
                 <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">
@@ -156,7 +157,7 @@ export default function StudentNotesPage() {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="generated" className="rounded-lg px-6">
+            <TabsTrigger value="generated" className="rounded-md px-4 py-1">
               AI library
               {generated.length > 0 && (
                 <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">
@@ -166,12 +167,12 @@ export default function StudentNotesPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="files" className="mt-6">
-            <Card className="border-0 shadow-lg shadow-indigo-500/5 bg-white/80 backdrop-blur-sm overflow-hidden">
-              <CardHeader className="border-b bg-gradient-to-r from-indigo-500/5 to-violet-500/5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <TabsContent value="files" className="mt-4">
+            <Card className="border-0 shadow-md shadow-indigo-500/5 bg-white/80 backdrop-blur-sm overflow-hidden gap-0 py-0">
+              <CardHeader className="border-b bg-gradient-to-r from-indigo-500/5 to-violet-500/5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3">
                 <div>
-                  <CardTitle>Your PDFs</CardTitle>
-                  <CardDescription>Pick a file and choose what to generate.</CardDescription>
+                  <CardTitle className="text-sm">Your PDFs</CardTitle>
+                  <CardDescription className="text-xs">Pick a file and choose what to generate.</CardDescription>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <GenButton type="Summary" files={modalFiles} onGenerate={handleGenerate} variant="default" />
@@ -181,9 +182,9 @@ export default function StudentNotesPage() {
               </CardHeader>
               <CardContent className="p-0">
                 {loading ? (
-                  <div className="p-8 space-y-3">
+                  <div className="p-4 space-y-2">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-16 rounded-xl shimmer" />
+                      <div key={i} className="h-10 rounded-lg shimmer" />
                     ))}
                   </div>
                 ) : materials.length === 0 ? (
@@ -196,17 +197,17 @@ export default function StudentNotesPage() {
                   <Stagger className="divide-y">
                     {materials.map((file) => (
                       <StaggerItem key={file.id}>
-                        <div className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 hover:bg-primary/[0.03] transition-colors">
-                          <div className="flex items-center gap-4 min-w-0">
-                            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-violet-500/15 text-primary group-hover:scale-105 transition-transform">
-                              <FileText className="size-6" />
+                        <div className="group flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 hover:bg-primary/[0.03] transition-colors">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/15 to-violet-500/15 text-primary">
+                              <FileText className="size-4" />
                             </div>
                             <div className="min-w-0">
-                              <p className="font-medium truncate">{file.filename}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{fmtDate(file.uploaded_at)}</p>
+                              <p className="text-sm font-medium truncate leading-tight">{file.filename}</p>
+                              <p className="text-[11px] text-muted-foreground">{fmtDate(file.uploaded_at)}</p>
                             </div>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                          <div className="flex flex-wrap items-center gap-1 sm:justify-end pl-10 sm:pl-0">
                             <GenButton
                               type="Summary"
                               files={[{ id: file.id, name: file.filename }]}
@@ -222,9 +223,9 @@ export default function StudentNotesPage() {
                               files={[{ id: file.id, name: file.filename }]}
                               onGenerate={handleGenerate}
                             />
-                            <Button variant="ghost" size="icon" className="rounded-full" asChild>
+                            <Button variant="ghost" size="icon" className="size-7 rounded-full" asChild>
                               <a href={file.url} target="_blank" rel="noopener noreferrer">
-                                <Download className="size-4" />
+                                <Download className="size-3.5" />
                               </a>
                             </Button>
                           </div>
@@ -237,11 +238,11 @@ export default function StudentNotesPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="generated" className="mt-6">
+          <TabsContent value="generated" className="mt-4">
             {generatedLoading ? (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-36 rounded-2xl shimmer" />
+                  <div key={i} className="h-24 rounded-xl shimmer" />
                 ))}
               </div>
             ) : generated.length === 0 ? (
@@ -251,7 +252,7 @@ export default function StudentNotesPage() {
                 description="Generate notes, a quiz, or flashcards from any uploaded PDF."
               />
             ) : (
-              <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <Stagger className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {generated.map((item) => {
                   const kind = item.kind ?? "summary"
                   const style = KIND_STYLES[kind] ?? KIND_STYLES.summary
@@ -259,25 +260,25 @@ export default function StudentNotesPage() {
                   return (
                     <StaggerItem key={item.id}>
                       <Link href={`/notes/${item.id}`} className="block h-full">
-                        <Card className="h-full card-interactive border-0 shadow-md bg-white/90 overflow-hidden group">
-                          <div className={cn("h-1.5 bg-gradient-to-r", style.color)} />
-                          <CardHeader className="pb-2">
+                        <Card className="h-full card-interactive border-0 shadow-sm bg-white/90 overflow-hidden group gap-2 py-3">
+                          <div className={cn("h-1 bg-gradient-to-r", style.color)} />
+                          <CardHeader className="pb-0 pt-3">
                             <div className="flex items-start justify-between gap-2">
                               <div
                                 className={cn(
-                                  "flex size-10 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-sm",
+                                  "flex size-7 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-sm",
                                   style.color
                                 )}
                               >
-                                <Icon className="size-5" />
+                                <Icon className="size-3.5" />
                               </div>
-                              <ArrowRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                              <ArrowRight className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                             </div>
-                            <CardTitle className="text-base line-clamp-2 mt-3">{item.title}</CardTitle>
-                            <CardDescription className="capitalize">{kind.replace("_", " ")}</CardDescription>
+                            <CardTitle className="text-sm line-clamp-2 mt-2">{item.title}</CardTitle>
+                            <CardDescription className="capitalize text-xs">{kind.replace("_", " ")}</CardDescription>
                           </CardHeader>
-                          <CardContent>
-                            <p className="text-xs text-muted-foreground">{fmtDate(item.created_at)}</p>
+                          <CardContent className="pt-0">
+                            <p className="text-[11px] text-muted-foreground">{fmtDate(item.created_at)}</p>
                           </CardContent>
                         </Card>
                       </Link>
@@ -289,6 +290,6 @@ export default function StudentNotesPage() {
           </TabsContent>
         </Tabs>
       </FadeIn>
-    </div>
+    </PageShell>
   )
 }

@@ -4,6 +4,8 @@ import { useEffect } from "react"
 import { Plus } from "lucide-react"
 import { CreateCourseModal } from "@/components/course/create-course-modal"
 import { TeacherCourseCard } from "@/components/course/teacher-course-card"
+import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { useCourses } from "@/features/courses/hooks"
 
 function formatCourseUpdated(iso: string | null): string {
@@ -21,20 +23,20 @@ export default function TeacherCoursesPage() {
   }, [fetchCourses])
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Courses</h1>
-          <p className="text-muted-foreground">Manage your courses, upload materials, and generate AI content.</p>
-        </div>
-
-        <CreateCourseModal
-          onCourseCreated={(c) => {
-            addCourse(c)
-            void fetchCourses()
-          }}
-        />
-      </div>
+    <PageShell>
+      <PageHeader
+        eyebrow="Teaching"
+        title="My Courses"
+        description="Manage your courses, upload materials, and generate AI content."
+        actions={
+          <CreateCourseModal
+            onCourseCreated={(c) => {
+              addCourse(c)
+              void fetchCourses()
+            }}
+          />
+        }
+      />
 
       {error && (
         <p className="text-sm text-destructive" role="alert">
@@ -45,7 +47,7 @@ export default function TeacherCoursesPage() {
       {loading ? (
         <p className="text-muted-foreground text-sm">Loading courses…</p>
       ) : courses.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
             <TeacherCourseCard
               key={course.id}
@@ -74,6 +76,6 @@ export default function TeacherCoursesPage() {
           />
         </div>
       )}
-    </div>
+    </PageShell>
   )
 }

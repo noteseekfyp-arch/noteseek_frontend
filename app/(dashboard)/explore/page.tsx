@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TeacherCourseCard } from "@/components/course/teacher-course-card"
+import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { CourseApi } from "@/features/courses/api"
 import { getUserRole } from "@/features/auth/cookies"
 import type { Course } from "@/types/course"
@@ -86,14 +88,12 @@ export default function CourseSearchPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Explore Courses</h1>
-        <p className="text-muted-foreground">
-          Search and discover public courses. Students can enroll from here; teachers manage courses from the teacher
-          dashboard.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        eyebrow="Discover"
+        title="Explore Courses"
+        description="Search and discover public courses. Students can enroll from here; teachers manage courses from the teacher dashboard."
+      />
 
       {loadError && (
         <p className="text-sm text-destructive" role="alert">
@@ -101,8 +101,8 @@ export default function CourseSearchPage() {
         </p>
       )}
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
-        <aside className="w-full md:w-64 space-y-6 shrink-0 bg-white p-5 rounded-xl border">
+      <div className="flex flex-col md:flex-row gap-5 items-start">
+        <aside className="w-full md:w-64 space-y-4 shrink-0 bg-white p-4 rounded-xl border">
           <div className="flex items-center gap-2 font-semibold">
             <Filter className="size-5" />
             Filters
@@ -208,6 +208,6 @@ export default function CourseSearchPage() {
           )}
         </div>
       </div>
-    </div>
+    </PageShell>
   )
 }

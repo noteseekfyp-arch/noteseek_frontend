@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { CourseApi } from "@/features/courses/api"
 import { MaterialApi } from "@/features/materials/api"
 import type { Course } from "@/types/course"
@@ -50,21 +52,20 @@ export default function TeacherMaterialsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Global Material Upload</h1>
-        <p className="mt-2 text-muted-foreground">
-          Upload syllabi, slide decks, or readings, and assign them directly to any of your active courses.
-        </p>
-      </div>
+    <PageShell narrow>
+      <PageHeader
+        eyebrow="Materials"
+        title="Global Material Upload"
+        description="Upload syllabi, slide decks, or readings, and assign them directly to any of your active courses."
+      />
 
-      <Card className="border-2 shadow-sm">
-        <CardHeader className="bg-muted/20 border-b pb-6">
+      <Card className="border-2 shadow-sm gap-3">
+        <CardHeader className="bg-muted/20 border-b py-3">
           <CardTitle>File Upload Portal</CardTitle>
           <CardDescription>Select a destination course before uploading.</CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-8 pt-8">
+        <CardContent className="space-y-5 pt-5">
           <div className="space-y-3">
             <Label className="text-base font-semibold">1. Select Destination Course</Label>
             <Select value={selectedCourse} onValueChange={setSelectedCourse}>
@@ -144,6 +145,6 @@ export default function TeacherMaterialsPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   )
 }

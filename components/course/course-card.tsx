@@ -35,7 +35,7 @@ export default function CourseCard({
   const grad = GRADIENTS[title.length % GRADIENTS.length]
 
   const content = (
-    <Card className="overflow-hidden h-full border-0 shadow-md card-interactive bg-white/90 group">
+    <Card className="overflow-hidden h-full border-0 shadow-md card-interactive glass-card group">
       <div className={cn("relative h-40 bg-gradient-to-br flex items-center justify-center", grad)}>
         <GraduationCap className="size-16 text-white/30 group-hover:scale-110 transition-transform duration-500" />
         {tag && (

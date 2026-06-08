@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Building2, BookA, Clock, Users } from "lucide-react"
 import { ContextSelectionModal } from "@/components/generation/context-selection-modal"
+import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { contextPayloadToGenerate } from "@/features/ai/generation-handlers"
 import { CourseApi } from "@/features/courses/api"
 import { MaterialApi } from "@/features/materials/api"
@@ -102,11 +104,28 @@ export default function TeacherCoursePage() {
   const visibilityLabel = course.visibility === "university" ? "University only" : "Public"
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight">{course.title}</h1>
+    <PageShell>
+      <PageHeader
+        eyebrow="Course"
+        title={course.title}
+        description={
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span className="inline-flex items-center gap-1.5">
+              <Building2 className="size-3.5" /> {course.university}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <BookA className="size-3.5" /> {course.department}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="size-3.5" /> {course.semester}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Users className="size-3.5" /> {course.student_count} students
+            </span>
+          </span>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">{course.id.slice(0, 8)}</Badge>
             <Badge
               variant="outline"
@@ -116,33 +135,15 @@ export default function TeacherCoursePage() {
             >
               {visibilityLabel}
             </Badge>
+            <Button variant="outline" size="sm" type="button" disabled title="Not implemented">
+              Edit
+            </Button>
+            <Button variant="outline" size="sm" type="button" disabled title="Not implemented">
+              Share
+            </Button>
           </div>
-
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <Building2 className="size-4" /> {course.university}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <BookA className="size-4" /> {course.department}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="size-4" /> {course.semester}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Users className="size-4" /> {course.student_count} students enrolled
-            </span>
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          <Button variant="outline" type="button" disabled title="Not implemented">
-            Edit Course
-          </Button>
-          <Button variant="outline" type="button" disabled title="Not implemented">
-            Share
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       <Tabs defaultValue="materials" className="w-full">
         <TabsList className="grid w-full grid-cols-3 max-w-md">
@@ -289,6 +290,6 @@ export default function TeacherCoursePage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </PageShell>
   )
 }

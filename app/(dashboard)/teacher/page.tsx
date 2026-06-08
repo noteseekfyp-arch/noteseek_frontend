@@ -3,6 +3,8 @@
 import { useEffect } from "react"
 import Link from "next/link"
 import StatCard from "@/components/stats/stat-card"
+import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { TeacherCourseCard } from "@/components/course/teacher-course-card"
 import { CreateCourseModal } from "@/components/course/create-course-modal"
 import { Button } from "@/components/ui/button"
@@ -31,31 +33,33 @@ export default function TeacherDashboard() {
   }
 
   return (
-    <div className="space-y-10">
-      <div className="flex justify-between items-start gap-4 flex-col sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
+    <PageShell>
+      <PageHeader
+        eyebrow="Teacher"
+        title="Dashboard"
+        description={
+          <>
             Your courses load from the API. Use{" "}
             <Link href="/teacher/courses" className="text-primary underline-offset-4 hover:underline">
               My Courses
             </Link>{" "}
             for the full list.
-          </p>
-        </div>
-
-        <div className="flex gap-3 shrink-0">
-          <Button variant="outline" type="button" disabled title="Not implemented">
-            Filter
-          </Button>
-          <CreateCourseModal onCourseCreated={afterCourseCreated}>
-            <Button>
-              <Plus className="mr-2 size-4" />
-              New Course
+          </>
+        }
+        actions={
+          <div className="flex gap-2 shrink-0">
+            <Button variant="outline" type="button" disabled title="Not implemented">
+              Filter
             </Button>
-          </CreateCourseModal>
-        </div>
-      </div>
+            <CreateCourseModal onCourseCreated={afterCourseCreated}>
+              <Button>
+                <Plus className="mr-2 size-4" />
+                New Course
+              </Button>
+            </CreateCourseModal>
+          </div>
+        }
+      />
 
       {error && (
         <p className="text-sm text-destructive" role="alert">
@@ -63,7 +67,7 @@ export default function TeacherDashboard() {
         </p>
       )}
 
-      <div className="grid md:grid-cols-4 gap-6">
+      <div className="grid md:grid-cols-4 gap-4">
         <StatCard title="Total Students" value={String(totalStudents)} icon={Users} />
         <StatCard
           title="Active Courses"
@@ -108,6 +112,6 @@ export default function TeacherDashboard() {
           </CreateCourseModal>
         </div>
       )}
-    </div>
+    </PageShell>
   )
 }

@@ -6,25 +6,26 @@ import { Search, ClipboardList } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
+import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 
 export default function TeacherSubmissionsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const submissions: never[] = []
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Student Submissions</h1>
-        <p className="mt-1 text-muted-foreground">
-          Grade assignments and quizzes. Data will load from `GET /api/submissions` (or equivalent) when implemented.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        eyebrow="Grading"
+        title="Student Submissions"
+        description="Grade assignments and quizzes. Data will load from `GET /api/submissions` (or equivalent) when implemented."
+      />
 
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           placeholder="Search by student name…"
-          className="pl-9"
+          className="pl-9 h-9"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -36,37 +37,36 @@ export default function TeacherSubmissionsPage() {
           <TabsTrigger value="graded">Graded (0)</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pending" className="mt-6">
+        <TabsContent value="pending" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardList className="size-5" />
-                Pending
-              </CardTitle>
-              <CardDescription>No submissions to grade yet.</CardDescription>
+              <CardTitle className="text-base">Pending submissions</CardTitle>
+              <CardDescription>Submissions awaiting your review will appear here.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {submissions.length === 0
-                  ? "Wire the submissions API to list student work here."
-                  : "Filtered results would appear here."}
-              </p>
+              <div className="py-8 text-center text-muted-foreground">
+                <ClipboardList className="size-10 mx-auto mb-3 opacity-40" />
+                <p className="text-sm">No submissions to grade yet.</p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="graded" className="mt-6">
+        <TabsContent value="graded" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Graded</CardTitle>
-              <CardDescription>Previously graded submissions will appear here.</CardDescription>
+              <CardTitle className="text-base">Graded submissions</CardTitle>
+              <CardDescription>Previously graded work will be listed here.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">No graded submissions yet.</p>
+              <div className="py-8 text-center text-muted-foreground">
+                <ClipboardList className="size-10 mx-auto mb-3 opacity-40" />
+                <p className="text-sm">No graded submissions yet.</p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </PageShell>
   )
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Sparkles, ChevronRight, GraduationCap, UploadCloud, BookOpen, ClipboardList, Layers, Loader2 } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { FadeIn } from "@/components/motion/fade-in"
 import { cn } from "@/lib/utils"
 
@@ -113,7 +114,7 @@ export default function StudentAIGeneratorPage() {
   ] as const
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto pb-8">
+    <PageShell narrow>
       <PageHeader
         eyebrow="AI studio"
         title="AI Generator"
@@ -121,66 +122,66 @@ export default function StudentAIGeneratorPage() {
       />
 
       {notice && (
-        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-4" role="status">
+        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5" role="status">
           {notice}
         </p>
       )}
 
       <FadeIn>
-      <Card className="border-0 shadow-xl bg-white/90 overflow-hidden">
+      <Card className="border-0 shadow-lg bg-white/90 overflow-hidden gap-3">
         <div className="h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
-        <CardHeader className="bg-muted/20 border-b pb-6">
-          <CardTitle>Configure Your Generation</CardTitle>
-          <CardDescription>Follow the steps below to instruct the AI what to build for you.</CardDescription>
+        <CardHeader className="bg-muted/20 border-b py-3">
+          <CardTitle className="text-base">Configure Your Generation</CardTitle>
+          <CardDescription className="text-xs">Follow the steps below to instruct the AI what to build for you.</CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-8 pt-8">
-          <div className="space-y-4">
-            <h3 className="text-base font-semibold flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
+        <CardContent className="space-y-6 pt-5">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <span className="flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px]">
                 1
               </span>
               What would you like to build?
             </h3>
-            <div className="pl-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="pl-7 grid grid-cols-2 md:grid-cols-4 gap-2.5">
               {typeOptions.map(({ id, icon: Icon, color }) => (
                 <motion.button
                   key={id}
                   type="button"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setGenerationType(id)}
                   className={cn(
-                    "rounded-2xl p-4 text-center border-2 transition-all",
+                    "rounded-xl p-3 text-center border-2 transition-all",
                     generationType === id
-                      ? "border-primary shadow-lg shadow-primary/15 bg-primary/5"
+                      ? "border-primary shadow-md shadow-primary/15 bg-primary/5"
                       : "border-transparent bg-muted/50 hover:bg-muted"
                   )}
                 >
                   <div
                     className={cn(
-                      "mx-auto mb-2 flex size-10 items-center justify-center rounded-xl bg-gradient-to-br text-white",
+                      "mx-auto mb-1.5 flex size-9 items-center justify-center rounded-lg bg-gradient-to-br text-white",
                       color,
                       generationType !== id && "opacity-60 grayscale"
                     )}
                   >
-                    <Icon className="size-5" />
+                    <Icon className="size-4" />
                   </div>
-                  <span className={cn("font-medium text-sm", generationType === id && "text-primary")}>{id}</span>
+                  <span className={cn("font-medium text-xs", generationType === id && "text-primary")}>{id}</span>
                 </motion.button>
               ))}
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-base font-semibold flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <span className="flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px]">
                 2
               </span>
               Where should the AI pull the information from?
             </h3>
-            <div className="pl-8 space-y-6">
-              <RadioGroup value={sourceType} onValueChange={setSourceType} className="flex gap-6">
+            <div className="pl-7 space-y-4">
+              <RadioGroup value={sourceType} onValueChange={setSourceType} className="flex gap-5">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="course" id="source-course" />
                   <Label htmlFor="source-course" className="flex items-center gap-2 cursor-pointer">
@@ -195,7 +196,7 @@ export default function StudentAIGeneratorPage() {
                 </div>
               </RadioGroup>
 
-              <div className="grid sm:grid-cols-2 gap-4 bg-muted/20 p-4 rounded-xl border">
+              <div className="grid sm:grid-cols-2 gap-3 bg-muted/20 p-3 rounded-lg border">
                 {sourceType === "course" ? (
                   <>
                     <div className="space-y-2">
@@ -252,17 +253,17 @@ export default function StudentAIGeneratorPage() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-base font-semibold flex items-center gap-2">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <span className="flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px]">
                 3
               </span>
               Additional specific instructions (Optional)
             </h3>
-            <div className="pl-8">
+            <div className="pl-7">
               <Textarea
                 placeholder="E.g. Make sure the flashcards focus heavily on the mathematical formulas..."
-                className="resize-none min-h-24"
+                className="resize-none min-h-[72px] text-sm"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
               />
@@ -270,10 +271,10 @@ export default function StudentAIGeneratorPage() {
           </div>
         </CardContent>
 
-        <CardFooter className="bg-muted/10 border-t p-6 flex justify-end">
+        <CardFooter className="bg-muted/10 border-t px-4 py-3 flex justify-end">
           <Button
-            className="w-full sm:w-auto min-w-40"
-            size="lg"
+            className="w-full sm:w-auto min-w-36"
+            size="default"
             onClick={() => void handleGenerate()}
             disabled={
               isGenerating ||
@@ -295,6 +296,6 @@ export default function StudentAIGeneratorPage() {
         </CardFooter>
       </Card>
       </FadeIn>
-    </div>
+    </PageShell>
   )
 }

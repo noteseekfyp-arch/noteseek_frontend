@@ -27,7 +27,7 @@ export default function AuthHeader({
   return (
     <header
       className={cn(
-        "flex items-center justify-between px-6 py-4 border-b border-border bg-background",
+        "sticky top-0 z-50 flex items-center justify-between px-6 py-4 glass-nav",
         className
       )}
     >

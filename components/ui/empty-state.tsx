@@ -13,14 +13,14 @@ export function EmptyState({ icon: Icon, title, description, className, children
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center rounded-2xl border-2 border-dashed border-primary/15 bg-gradient-to-b from-primary/5 to-transparent p-12",
+        "flex flex-col items-center justify-center text-center rounded-xl border-2 border-dashed border-primary/15 bg-gradient-to-b from-primary/5 to-transparent p-8",
         className
       )}
     >
-      <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
-        <Icon className="size-8" />
+      <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-inner">
+        <Icon className="size-5" />
       </div>
-      <p className="font-semibold text-lg text-foreground">{title}</p>
+      <p className="font-semibold text-sm text-foreground">{title}</p>
       {description && <p className="mt-2 text-sm text-muted-foreground max-w-sm">{description}</p>}
       {children && <div className="mt-6">{children}</div>}
     </div>

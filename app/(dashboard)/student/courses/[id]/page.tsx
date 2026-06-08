@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge"
 import { Building2, BookA, Clock, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ContextSelectionModal } from "@/components/generation/context-selection-modal"
+import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { contextPayloadToGenerate } from "@/features/ai/generation-handlers"
 import { CourseApi } from "@/features/courses/api"
 import { MaterialApi } from "@/features/materials/api"
@@ -110,45 +112,44 @@ export default function StudentCoursePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight">{course.title}</h1>
+    <PageShell>
+      <PageHeader
+        eyebrow="Course"
+        title={course.title}
+        description={
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span className="inline-flex items-center gap-1.5">
+              <Users className="size-3.5" /> {course.teacher}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Building2 className="size-3.5" /> {course.university}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <BookA className="size-3.5" /> {course.department}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="size-3.5" /> {course.semester}
+            </span>
+          </span>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">{course.id.slice(0, 8)}</Badge>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5 font-medium text-foreground">
-              <Users className="size-4" /> Instructor: {course.teacher}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Building2 className="size-4" /> {course.university}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <BookA className="size-4" /> {course.department}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="size-4" /> {course.semester}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex gap-2 shrink-0">
-          <Button variant="outline" className="text-green-600 border-green-200 bg-green-50 pointer-events-none">
-            <CheckCircle className="mr-2 size-4" /> Enrolled
-          </Button>
-          <ContextSelectionModal
-            defaultType="Summary"
-            availableFiles={modalFiles}
-            onGenerate={handleStudyGuide}
-          >
-            <Button variant="default" className="gap-2 shrink-0" disabled={modalFiles.length === 0}>
-              <Sparkles className="size-4" /> Generate Study Guide
+            <Button variant="outline" size="sm" className="text-green-600 border-green-200 bg-green-50 pointer-events-none">
+              <CheckCircle className="mr-1.5 size-3.5" /> Enrolled
             </Button>
-          </ContextSelectionModal>
-        </div>
-      </div>
+            <ContextSelectionModal
+              defaultType="Summary"
+              availableFiles={modalFiles}
+              onGenerate={handleStudyGuide}
+            >
+              <Button size="sm" className="gap-1.5 shrink-0" disabled={modalFiles.length === 0}>
+                <Sparkles className="size-3.5" /> Study Guide
+              </Button>
+            </ContextSelectionModal>
+          </div>
+        }
+      />
 
       <Tabs defaultValue="materials" className="w-full">
         <TabsList className="grid w-full grid-cols-3 max-w-md">
@@ -157,7 +158,7 @@ export default function StudentCoursePage() {
           <TabsTrigger value="my-notes">My AI Notes</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="materials" className="mt-6">
+        <TabsContent value="materials" className="mt-4">
           <Card>
             <CardHeader>
               <CardTitle>Materials Provided by Instructor</CardTitle>
@@ -211,7 +212,7 @@ export default function StudentCoursePage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="assessments" className="mt-6">
+        <TabsContent value="assessments" className="mt-4">
           <Card>
             <CardHeader>
               <CardTitle>Assessments</CardTitle>
@@ -223,7 +224,7 @@ export default function StudentCoursePage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="my-notes" className="mt-6">
+        <TabsContent value="my-notes" className="mt-4">
           <Card>
             <CardHeader>
               <CardTitle>My Generated Library</CardTitle>
@@ -256,6 +257,6 @@ export default function StudentCoursePage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </PageShell>
   )
 }

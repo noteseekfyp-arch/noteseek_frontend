@@ -19,7 +19,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { FadeIn } from "@/components/motion/fade-in"
+import { PageHeader } from "@/components/layout/page-header"
+import { PageShell } from "@/components/layout/page-shell"
 import { NotesApi } from "@/features/notes/api"
 import type { Note } from "@/types/note"
 import { cn } from "@/lib/utils"
@@ -126,26 +127,27 @@ export default function AINotesPage() {
   }
 
   return (
-    <FadeIn className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div>
-          <Button asChild variant="ghost" size="sm" className="mb-3 -ml-2 text-muted-foreground rounded-full">
-            <Link href="/student/notes">
-              <ArrowLeft className="size-4 mr-1" /> Vault
-            </Link>
-          </Button>
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight gradient-text">{note.title}</h1>
-            {note.is_generated && (
-              <Badge className="bg-primary/10 text-primary border-0">AI generated</Badge>
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground flex items-center gap-2">
-            <FileText className="size-4" />
+    <PageShell narrow>
+      <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground rounded-full w-fit">
+        <Link href="/student/notes">
+          <ArrowLeft className="size-4 mr-1" /> Vault
+        </Link>
+      </Button>
+
+      <PageHeader
+        title={note.title}
+        description={
+          <span className="inline-flex items-center gap-1.5">
+            <FileText className="size-3.5" />
             <span className="capitalize">{note.kind?.replace("_", " ") ?? "Note"}</span>
-          </p>
-        </div>
-      </div>
+          </span>
+        }
+        actions={
+          note.is_generated ? (
+            <Badge className="bg-primary/10 text-primary border-0">AI generated</Badge>
+          ) : undefined
+        }
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="h-auto flex-wrap gap-1 bg-white/80 shadow-sm border p-1.5 rounded-xl">
@@ -337,6 +339,6 @@ export default function AINotesPage() {
           </div>
         </TabsContent>
       </Tabs>
-    </FadeIn>
+    </PageShell>
   )
 }
