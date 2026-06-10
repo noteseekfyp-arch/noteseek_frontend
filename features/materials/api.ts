@@ -45,4 +45,12 @@ export const MaterialApi = {
         await throwIfBad(res)
         return res.json() as Promise<Material>
     },
+
+    async delete(materialId: string): Promise<void> {
+        const res = await fetch(`${API_BASE_URL}/materials/${materialId}`, {
+            method: "DELETE",
+            headers: { ...bearerHeaders() },
+        })
+        await throwIfBad(res)
+    },
 }

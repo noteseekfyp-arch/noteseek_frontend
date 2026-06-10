@@ -5,6 +5,7 @@ import Link from "next/link"
 import StatCard from "@/components/stats/stat-card"
 import { PageHeader } from "@/components/layout/page-header"
 import { PageShell } from "@/components/layout/page-shell"
+import { CardGridSkeleton } from "@/components/ui/skeletons"
 import { TeacherCourseCard } from "@/components/course/teacher-course-card"
 import { CreateCourseModal } from "@/components/course/create-course-modal"
 import { Button } from "@/components/ui/button"
@@ -85,7 +86,7 @@ export default function TeacherDashboard() {
       </div>
 
       {loading ? (
-        <p className="text-muted-foreground text-sm">Loading courses…</p>
+        <CardGridSkeleton count={4} className="md:grid-cols-4 gap-6" cardClassName="h-64" />
       ) : (
         <div className="grid md:grid-cols-4 gap-6 items-stretch">
           {courses.map((course) => (

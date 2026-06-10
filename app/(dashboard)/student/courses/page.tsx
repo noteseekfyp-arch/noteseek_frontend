@@ -7,6 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/components/layout/page-header"
 import { PageShell } from "@/components/layout/page-shell"
+import { CardGridSkeleton } from "@/components/ui/skeletons"
 import { useCourses } from "@/features/courses/hooks"
 
 export default function StudentCoursesPage() {
@@ -38,7 +39,7 @@ export default function StudentCoursesPage() {
       )}
 
       {loading ? (
-        <p className="text-muted-foreground text-sm">Loading courses…</p>
+        <CardGridSkeleton count={6} cardClassName="h-48" />
       ) : courses.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {courses.map((course) => (

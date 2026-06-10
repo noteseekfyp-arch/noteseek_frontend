@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { FileText, Download, Upload, Bot, CheckCircle, FileUp, MoreVertical } from "lucide-react"
+import { FileText, Download, Upload, Bot, CheckCircle, FileUp, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -13,6 +13,7 @@ import { Building2, BookA, Clock, Users } from "lucide-react"
 import { ContextSelectionModal } from "@/components/generation/context-selection-modal"
 import { PageHeader } from "@/components/layout/page-header"
 import { PageShell } from "@/components/layout/page-shell"
+import { DetailSkeleton } from "@/components/ui/skeletons"
 import { generateAndOpenNote } from "@/features/ai/generation-handlers"
 import { CourseApi } from "@/features/courses/api"
 import { MaterialApi } from "@/features/materials/api"
@@ -85,8 +86,36 @@ export default function TeacherCoursePage() {
     await generateAndOpenNote(router, payload, { targetCourseId: courseId })
   }
 
+  const handleDeleteMaterial = async (file: Material) => {
+    if (!window.confirm(`Delete "${file.filename}" from this course? Students will lose access to it.`)) return
+    try {
+      await MaterialApi.delete(file.id)
+      setMaterials((prev) => prev.filter((m) => m.id !== file.id))
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Delete failed")
+    }
+  }
+
+  const handleDeleteNote = async (n: Note) => {
+    if (!window.confirm(`Delete "${n.title}"? This cannot be undone.`)) return
+    try {
+      await NotesApi.delete(n.id)
+      setGenerated((prev) => prev.filter((g) => g.id !== n.id))
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Delete failed")
+    }
+  }
+
+  const handleDownloadNotePdf = async (n: Note) => {
+    try {
+      await NotesApi.downloadPdf(n.id, n.title)
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Download failed")
+    }
+  }
+
   if (loading) {
-    return <p className="text-muted-foreground text-sm">Loading course…</p>
+    return <DetailSkeleton />
   }
 
   if (error || !course) {
@@ -190,9 +219,15 @@ export default function TeacherCoursePage() {
                           <span className="sr-only">Download</span>
                         </a>
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" type="button" disabled>
-                        <MoreVertical className="size-4" />
-                        <span className="sr-only">Menu</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        type="button"
+                        onClick={() => void handleDeleteMaterial(file)}
+                      >
+                        <Trash2 className="size-4" />
+                        <span className="sr-only">Delete</span>
                       </Button>
                     </div>
                   </div>
@@ -278,9 +313,31 @@ export default function TeacherCoursePage() {
                           {n.kind?.replace("_", " ")} · {fmtDate(n.created_at)}
                         </p>
                       </div>
-                      <Button asChild size="sm" variant="outline">
-                        <Link href={`/notes/${n.id}`}>Open</Link>
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/notes/${n.id}`}>Open</Link>
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8"
+                          title="Download as PDF"
+                          onClick={() => void handleDownloadNotePdf(n)}
+                        >
+                          <Download className="size-4" />
+                          <span className="sr-only">Download PDF</span>
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          title="Delete"
+                          onClick={() => void handleDeleteNote(n)}
+                        >
+                          <Trash2 className="size-4" />
+                          <span className="sr-only">Delete</span>
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>

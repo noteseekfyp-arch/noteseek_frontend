@@ -13,6 +13,7 @@ import {
   ClipboardList,
   Layers,
   ArrowRight,
+  Trash2,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -128,6 +129,26 @@ export default function StudentNotesPage() {
     }
   }
 
+  const onDeleteMaterial = async (file: Material) => {
+    if (!window.confirm(`Delete "${file.filename}"? Generated content created from it stays in your library.`)) return
+    try {
+      await MaterialApi.delete(file.id)
+      setMaterials((prev) => prev.filter((m) => m.id !== file.id))
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Delete failed")
+    }
+  }
+
+  const onDeleteNote = async (item: Note) => {
+    if (!window.confirm(`Delete "${item.title}"? This cannot be undone.`)) return
+    try {
+      await NotesApi.delete(item.id)
+      setGenerated((prev) => prev.filter((n) => n.id !== item.id))
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Delete failed")
+    }
+  }
+
   return (
     <PageShell>
       <PageHeader
@@ -234,6 +255,15 @@ export default function StudentNotesPage() {
                                 <Download className="size-3.5" />
                               </a>
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => void onDeleteMaterial(file)}
+                            >
+                              <Trash2 className="size-3.5" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
                           </div>
                         </div>
                       </StaggerItem>
@@ -270,16 +300,30 @@ export default function StudentNotesPage() {
                           <div className={cn("h-1 bg-gradient-to-r", style.color)} />
                           <CardHeader className="pb-0 pt-3">
                             <div className="flex items-start justify-between gap-2">
-                              <div
-                                className={cn(
-                                  "flex size-7 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-sm",
-                                  style.color
-                                )}
+                            <div
+                              className={cn(
+                                "flex size-7 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-sm",
+                                style.color
+                              )}
+                            >
+                              <Icon className="size-3.5" />
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                className="flex size-6 items-center justify-center rounded-full text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10 transition-all"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  void onDeleteNote(item)
+                                }}
                               >
-                                <Icon className="size-3.5" />
-                              </div>
+                                <Trash2 className="size-3.5" />
+                                <span className="sr-only">Delete</span>
+                              </button>
                               <ArrowRight className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                             </div>
+                          </div>
                             <CardTitle className="text-sm line-clamp-2 mt-2">{item.title}</CardTitle>
                             <CardDescription className="capitalize text-xs">{kind.replace("_", " ")}</CardDescription>
                           </CardHeader>

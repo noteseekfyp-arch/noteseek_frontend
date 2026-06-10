@@ -6,6 +6,7 @@ import { CreateCourseModal } from "@/components/course/create-course-modal"
 import { TeacherCourseCard } from "@/components/course/teacher-course-card"
 import { PageHeader } from "@/components/layout/page-header"
 import { PageShell } from "@/components/layout/page-shell"
+import { CardGridSkeleton } from "@/components/ui/skeletons"
 import { useCourses } from "@/features/courses/hooks"
 
 function formatCourseUpdated(iso: string | null): string {
@@ -45,7 +46,7 @@ export default function TeacherCoursesPage() {
       )}
 
       {loading ? (
-        <p className="text-muted-foreground text-sm">Loading courses…</p>
+        <CardGridSkeleton count={6} cardClassName="h-52" />
       ) : courses.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (

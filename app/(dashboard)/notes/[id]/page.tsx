@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -13,6 +13,9 @@ import {
   ChevronRight,
   ClipboardList,
   ArrowLeft,
+  Download,
+  Trash2,
+  Loader2,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -67,12 +70,40 @@ export default function AINotesPage() {
     return Array.isArray(raw) ? raw[0] : raw
   }, [params.id])
 
+  const router = useRouter()
   const [note, setNote] = useState<Note | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [cardIndex, setCardIndex] = useState(0)
   const [showBack, setShowBack] = useState(false)
   const [activeTab, setActiveTab] = useState("content")
+  const [downloading, setDownloading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDownloadPdf = async () => {
+    if (!note || downloading) return
+    setDownloading(true)
+    try {
+      await NotesApi.downloadPdf(note.id, note.title)
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Download failed")
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!note || deleting) return
+    if (!window.confirm(`Delete "${note.title}"? This cannot be undone.`)) return
+    setDeleting(true)
+    try {
+      await NotesApi.delete(note.id)
+      router.back()
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Delete failed")
+      setDeleting(false)
+    }
+  }
 
   useEffect(() => {
     if (!noteId) return
@@ -143,9 +174,39 @@ export default function AINotesPage() {
           </span>
         }
         actions={
-          note.is_generated ? (
-            <Badge className="bg-primary/10 text-primary border-0">AI generated</Badge>
-          ) : undefined
+          <div className="flex flex-wrap items-center gap-2">
+            {note.is_generated && (
+              <Badge className="bg-primary/10 text-primary border-0">AI generated</Badge>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              onClick={() => void handleDownloadPdf()}
+              disabled={downloading}
+            >
+              {downloading ? (
+                <Loader2 className="size-4 mr-1.5 animate-spin" />
+              ) : (
+                <Download className="size-4 mr-1.5" />
+              )}
+              Download PDF
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+              onClick={() => void handleDelete()}
+              disabled={deleting}
+            >
+              {deleting ? (
+                <Loader2 className="size-4 mr-1.5 animate-spin" />
+              ) : (
+                <Trash2 className="size-4 mr-1.5" />
+              )}
+              Delete
+            </Button>
+          </div>
         }
       />
 

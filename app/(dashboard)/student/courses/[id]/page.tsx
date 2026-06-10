@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation"
 import { ContextSelectionModal } from "@/components/generation/context-selection-modal"
 import { PageHeader } from "@/components/layout/page-header"
 import { PageShell } from "@/components/layout/page-shell"
+import { DetailSkeleton } from "@/components/ui/skeletons"
 import { generateAndOpenNote } from "@/features/ai/generation-handlers"
 import { CourseApi } from "@/features/courses/api"
 import { MaterialApi } from "@/features/materials/api"
@@ -95,7 +96,7 @@ export default function StudentCoursePage() {
   }
 
   if (loading) {
-    return <p className="text-muted-foreground text-sm">Loading course…</p>
+    return <DetailSkeleton />
   }
 
   if (error || !course) {

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TeacherCourseCard } from "@/components/course/teacher-course-card"
 import { PageHeader } from "@/components/layout/page-header"
 import { PageShell } from "@/components/layout/page-shell"
+import { CardGridSkeleton } from "@/components/ui/skeletons"
 import { CourseApi } from "@/features/courses/api"
 import { getUserRole } from "@/features/auth/cookies"
 import type { Course } from "@/types/course"
@@ -168,7 +169,7 @@ export default function CourseSearchPage() {
           </div>
 
           {loading ? (
-            <p className="text-muted-foreground text-sm">Loading catalog…</p>
+            <CardGridSkeleton count={6} className="sm:grid-cols-2 lg:grid-cols-3 gap-6" cardClassName="h-56" />
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filteredCourses.map((course) => (

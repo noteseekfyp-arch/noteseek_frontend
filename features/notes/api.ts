@@ -49,4 +49,28 @@ export const NotesApi = {
     await throwIfBad(res)
     return res.json() as Promise<Note>
   },
+
+  async delete(noteId: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/notes/${noteId}`, {
+      method: "DELETE",
+      headers: { ...bearerHeaders() },
+    })
+    await throwIfBad(res)
+  },
+
+  async downloadPdf(noteId: string, title?: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/notes/${noteId}/pdf`, {
+      headers: { ...bearerHeaders() },
+    })
+    await throwIfBad(res)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${(title ?? "noteseek_note").replace(/[^\w \-]/g, "").trim() || "noteseek_note"}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  },
 }
