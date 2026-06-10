@@ -15,3 +15,18 @@ export const API_PREFIX = "/api"
 
 export const API_BASE_URL =
   configuredOrigin.length > 0 ? `${configuredOrigin}${API_PREFIX}` : API_PREFIX
+
+/**
+ * AI generation can take minutes (Ollama). Next.js dev rewrites drop long proxied
+ * requests ("socket hang up") while the backend still saves the note.
+ * Call the API directly for /ai/generate; FastAPI CORS allows localhost origins.
+ */
+export function getAiApiBaseUrl(): string {
+  if (configuredOrigin.length > 0) {
+    return `${configuredOrigin}${API_PREFIX}`
+  }
+  if (process.env.NODE_ENV === "development") {
+    return `http://127.0.0.1:8000${API_PREFIX}`
+  }
+  return API_BASE_URL
+}

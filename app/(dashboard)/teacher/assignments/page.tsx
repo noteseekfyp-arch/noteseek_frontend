@@ -14,7 +14,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { PageShell } from "@/components/layout/page-shell"
 import { CourseApi } from "@/features/courses/api"
 import { MaterialApi } from "@/features/materials/api"
-import { AiApi } from "@/features/ai/api"
+import { directGenerateAndOpen } from "@/features/ai/generation-handlers"
 import type { Course } from "@/types/course"
 import type { Material } from "@/types/material"
 
@@ -70,13 +70,12 @@ export default function TeacherCreateAssignmentPage() {
       if (sourceIds.length === 0) {
         throw new Error("Upload at least one course material to use as context.")
       }
-      const result = await AiApi.generate({
+      await directGenerateAndOpen(router, {
         type: "assignment",
         sourceMaterialIds: sourceIds,
         prompt: prompt.trim() || undefined,
         targetCourseId: selectedCourse,
       })
-      router.push(`/notes/${result.id}`)
     } catch (e) {
       setNotice(e instanceof Error ? e.message : "Generation failed")
     } finally {

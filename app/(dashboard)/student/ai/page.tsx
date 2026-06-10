@@ -17,7 +17,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CourseApi } from "@/features/courses/api"
 import { MaterialApi } from "@/features/materials/api"
-import { AiApi, mapUiGenerationType } from "@/features/ai/api"
+import { mapUiGenerationType } from "@/features/ai/api"
+import { directGenerateAndOpen } from "@/features/ai/generation-handlers"
 import type { Course } from "@/types/course"
 import type { Material } from "@/types/material"
 
@@ -90,13 +91,12 @@ export default function StudentAIGeneratorPage() {
       if (sourceIds.length === 0) {
         throw new Error("Select at least one material or upload course files first.")
       }
-      const result = await AiApi.generate({
+      await directGenerateAndOpen(router, {
         type: mapUiGenerationType(generationType),
         sourceMaterialIds: sourceIds,
         prompt: prompt.trim() || undefined,
         targetCourseId: sourceType === "course" ? selectedCourse : undefined,
       })
-      router.push(`/notes/${result.id}`)
     } catch (e) {
       setNotice(e instanceof Error ? e.message : "Generation failed")
     } finally {

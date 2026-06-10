@@ -25,7 +25,7 @@ import { PageShell } from "@/components/layout/page-shell"
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/fade-in"
 import { EmptyState } from "@/components/ui/empty-state"
 import { UploadZone } from "@/components/ui/upload-zone"
-import { contextPayloadToGenerate } from "@/features/ai/generation-handlers"
+import { generateAndOpenNote } from "@/features/ai/generation-handlers"
 import { MaterialApi } from "@/features/materials/api"
 import { NotesApi } from "@/features/notes/api"
 import type { Material } from "@/types/material"
@@ -55,7 +55,7 @@ function GenButton({
 }: {
   type: "Summary" | "Quiz" | "Flashcards"
   files: { id: string; name: string }[]
-  onGenerate: (p: Parameters<typeof contextPayloadToGenerate>[0]) => Promise<void>
+  onGenerate: (p: Parameters<typeof generateAndOpenNote>[1]) => Promise<void>
   variant?: "default" | "outline" | "secondary"
 }) {
   const icons = { Summary: BookOpen, Quiz: ClipboardList, Flashcards: Layers }
@@ -110,10 +110,10 @@ export default function StudentNotesPage() {
 
   const modalFiles = materials.map((m) => ({ id: m.id, name: m.filename }))
 
-  const handleGenerate = async (payload: Parameters<typeof contextPayloadToGenerate>[0]) => {
-    const result = await contextPayloadToGenerate(payload)
-    await refreshGenerated()
-    router.push(`/notes/${result.id}`)
+  const handleGenerate = async (payload: Parameters<typeof generateAndOpenNote>[1]) => {
+    await generateAndOpenNote(router, payload, {
+      onAfterNavigate: refreshGenerated,
+    })
   }
 
   const onUpload = async (file: File) => {
@@ -147,7 +147,13 @@ export default function StudentNotesPage() {
       </FadeIn>
 
       <FadeIn delay={0.1}>
-        <Tabs defaultValue="files" className="w-full">
+        <Tabs
+          defaultValue="files"
+          className="w-full"
+          onValueChange={(tab) => {
+            if (tab === "generated") void refreshGenerated()
+          }}
+        >
           <TabsList className="h-8 p-0.5 bg-white/80 shadow-sm border w-full sm:w-auto grid grid-cols-2 sm:inline-flex text-xs">
             <TabsTrigger value="files" className="rounded-md px-4 py-1">
               Uploaded files

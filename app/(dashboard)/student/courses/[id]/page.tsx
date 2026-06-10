@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation"
 import { ContextSelectionModal } from "@/components/generation/context-selection-modal"
 import { PageHeader } from "@/components/layout/page-header"
 import { PageShell } from "@/components/layout/page-shell"
-import { contextPayloadToGenerate } from "@/features/ai/generation-handlers"
+import { generateAndOpenNote } from "@/features/ai/generation-handlers"
 import { CourseApi } from "@/features/courses/api"
 import { MaterialApi } from "@/features/materials/api"
 import { NotesApi } from "@/features/notes/api"
@@ -81,19 +81,17 @@ export default function StudentCoursePage() {
     [materials]
   )
 
-  const handleGenerate = async (payload: Parameters<typeof contextPayloadToGenerate>[0]) => {
+  const handleGenerate = async (payload: Parameters<typeof generateAndOpenNote>[1]) => {
     if (!courseId) return
-    const result = await contextPayloadToGenerate(payload, { targetCourseId: courseId })
-    router.push(`/notes/${result.id}`)
+    await generateAndOpenNote(router, payload, { targetCourseId: courseId })
   }
 
-  const handleStudyGuide = async (payload: Parameters<typeof contextPayloadToGenerate>[0]) => {
+  const handleStudyGuide = async (payload: Parameters<typeof generateAndOpenNote>[1]) => {
     if (!courseId) return
-    const result = await contextPayloadToGenerate(payload, {
+    await generateAndOpenNote(router, payload, {
       targetCourseId: courseId,
       typeOverride: "study_guide",
     })
-    router.push(`/notes/${result.id}`)
   }
 
   if (loading) {

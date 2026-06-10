@@ -40,7 +40,21 @@ export async function registerUser(data: RegisterPayload) {
     })
 
     if (!res.ok) {
-        throw new Error("Registration failed")
+        let message = "Registration failed. Please try again."
+        try {
+            const body = await res.json()
+            const detail = body?.detail
+            if (detail === "REGISTER_USER_ALREADY_EXISTS") {
+                message = "An account with this email already exists."
+            } else if (typeof detail === "string") {
+                message = detail
+            } else if (detail?.reason) {
+                message = detail.reason
+            }
+        } catch {
+            // keep default message
+        }
+        throw new Error(message)
     }
 
     return res.json()

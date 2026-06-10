@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/config/api"
+import { API_BASE_URL, getAiApiBaseUrl } from "@/config/api"
 import { getAccessToken } from "@/features/auth/cookies"
 import type { GeneratePayload, GenerateResult, GenerationType } from "@/types/note"
 
@@ -37,7 +37,7 @@ export function mapUiGenerationType(label: string): GenerationType {
 
 export const AiApi = {
   async generate(payload: GeneratePayload): Promise<GenerateResult> {
-    const res = await fetch(`${API_BASE_URL}/ai/generate`, {
+    const res = await fetch(`${getAiApiBaseUrl()}/ai/generate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,5 +65,14 @@ export const AiApi = {
       type: data.type,
       content: data.content,
     }
+  },
+
+  /** Lightweight status check — uses the normal proxied base URL. */
+  async status(): Promise<unknown> {
+    const res = await fetch(`${API_BASE_URL}/ai/status`, {
+      headers: { ...bearerHeaders() },
+    })
+    await throwIfBad(res)
+    return res.json()
   },
 }

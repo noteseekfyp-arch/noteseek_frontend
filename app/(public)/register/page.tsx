@@ -10,6 +10,7 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
+  Loader2,
 } from "lucide-react"
 
 import AuthHeader from "@/components/auth/auth-header"
@@ -27,6 +28,26 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+const UNIVERSITIES = [
+  "University of Management and Technology (UMT)",
+  "University of the Punjab (PU)",
+  "National University of Sciences and Technology (NUST)",
+  "Lahore University of Management Sciences (LUMS)",
+  "FAST National University (NUCES)",
+  "COMSATS University Islamabad",
+  "University of Engineering and Technology (UET) Lahore",
+  "Government College University (GCU) Lahore",
+  "Information Technology University (ITU)",
+  "Quaid-i-Azam University (QAU)",
+  "International Islamic University Islamabad (IIUI)",
+  "University of Central Punjab (UCP)",
+  "Bahria University",
+  "Air University",
+  "Other",
+]
+
+const SEMESTERS = ["1", "2", "3", "4", "5", "6", "7", "8"]
+
 export default function RegisterPage() {
   const router = useRouter()
   const [role, setRole] = useState<AuthRole>("student")
@@ -35,13 +56,24 @@ export default function RegisterPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [university, setUniversity] = useState("")
   const [department, setDepartment] = useState("")
   const [semester, setSemester] = useState("")
 
-  async function handleRegister(e: any) {
-    e.preventDefault()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.")
+      return
+    }
+
+    setLoading(true)
     try {
       await registerUser({
         email,
@@ -55,7 +87,8 @@ export default function RegisterPage() {
 
       router.push("/login")
     } catch (err) {
-      console.error(err)
+      setError(err instanceof Error ? err.message : "Registration failed. Please try again.")
+      setLoading(false)
     }
   }
 
@@ -122,13 +155,13 @@ export default function RegisterPage() {
             <div className="mt-4 flex items-center gap-3">
               <Avatar className="size-10 border-2 border-primary-foreground/20">
                 <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground">
-                  JD
+                  AR
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">Jane Doe</p>
+                <p className="font-medium">Ayesha Raza</p>
                 <p className="text-xs text-primary-foreground/80">
-                  Senior Resident, Stanford Medical
+                  Computer Science Student, UMT Lahore
                 </p>
               </div>
             </div>
@@ -184,10 +217,12 @@ export default function RegisterPage() {
                   <SelectTrigger id="reg-university">
                     <SelectValue placeholder="Select your university" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="stanford">Stanford University</SelectItem>
-                    <SelectItem value="mit">MIT</SelectItem>
-                    <SelectItem value="harvard">Harvard</SelectItem>
+                  <SelectContent className="max-h-72">
+                    {UNIVERSITIES.map((uni) => (
+                      <SelectItem key={uni} value={uni}>
+                        {uni}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -210,9 +245,11 @@ export default function RegisterPage() {
                       <SelectValue placeholder="Choose semester" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">Semester 1</SelectItem>
-                      <SelectItem value="2">Semester 2</SelectItem>
-                      <SelectItem value="3">Semester 3</SelectItem>
+                      {SEMESTERS.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          Semester {s}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -249,6 +286,8 @@ export default function RegisterPage() {
                 <Input
                   id="reg-confirm"
                   type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your password"
                 />
               </div>
@@ -271,13 +310,29 @@ export default function RegisterPage() {
                 </Label>
               </div>
 
+              {error && (
+                <p className="text-sm text-red-500 font-medium text-center">
+                  {error}
+                </p>
+              )}
+
               <Button
                 type="submit"
                 className="w-full"
                 size="lg"
+                disabled={loading}
               >
-                Create Academic Account
-                <ArrowRight className="ml-2 size-4" />
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    Creating your account...
+                  </>
+                ) : (
+                  <>
+                    Create Academic Account
+                    <ArrowRight className="ml-2 size-4" />
+                  </>
+                )}
               </Button>
             </form>
           </div>
