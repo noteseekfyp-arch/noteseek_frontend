@@ -1,29 +1,6 @@
 import { API_BASE_URL } from "@/config/api"
-import { getAccessToken } from "@/features/auth/cookies"
+import { bearerHeaders, throwIfBad } from "@/features/http"
 import type { Note } from "@/types/note"
-
-function bearerHeaders(): HeadersInit {
-  const token = getAccessToken()
-  if (!token) throw new Error("Not authenticated")
-  return { Authorization: `Bearer ${token}` }
-}
-
-async function throwIfBad(res: Response): Promise<void> {
-  if (res.ok) return
-  if (res.status === 401) {
-    throw new Error("Session expired. Please log out and log in again.")
-  }
-  let detail = res.statusText
-  try {
-    const body = await res.json()
-    if (typeof body?.detail === "string") detail = body.detail
-    else if (Array.isArray(body?.detail))
-      detail = body.detail.map((x: { msg?: string }) => x?.msg ?? JSON.stringify(x)).join(", ")
-  } catch {
-    /* ignore */
-  }
-  throw new Error(detail || `Request failed (${res.status})`)
-}
 
 export const NotesApi = {
   async list(generatedOnly?: boolean): Promise<Note[]> {
@@ -58,8 +35,15 @@ export const NotesApi = {
     await throwIfBad(res)
   },
 
-  async downloadPdf(noteId: string, title?: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/notes/${noteId}/pdf`, {
+  async downloadPdf(
+    noteId: string,
+    title?: string,
+    opts?: { answers?: boolean; suffix?: string }
+  ): Promise<void> {
+    const params = new URLSearchParams()
+    if (opts?.answers === false) params.set("answers", "false")
+    const qs = params.toString()
+    const res = await fetch(`${API_BASE_URL}/notes/${noteId}/pdf${qs ? `?${qs}` : ""}`, {
       headers: { ...bearerHeaders() },
     })
     await throwIfBad(res)
@@ -67,10 +51,30 @@ export const NotesApi = {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `${(title ?? "noteseek_note").replace(/[^\w \-]/g, "").trim() || "noteseek_note"}.pdf`
+    const base = (title ?? "noteseek_note").replace(/[^\w \-]/g, "").trim() || "noteseek_note"
+    a.download = `${base}${opts?.suffix ?? ""}.pdf`
     document.body.appendChild(a)
     a.click()
     a.remove()
     URL.revokeObjectURL(url)
+  },
+
+  async publish(noteId: string, published: boolean): Promise<Note> {
+    const res = await fetch(`${API_BASE_URL}/notes/${noteId}/publish?published=${published}`, {
+      method: "PATCH",
+      headers: { ...bearerHeaders() },
+    })
+    await throwIfBad(res)
+    return res.json() as Promise<Note>
+  },
+
+  async listPublished(courseId?: string): Promise<Note[]> {
+    const qs = courseId ? `?course_id=${encodeURIComponent(courseId)}` : ""
+    const res = await fetch(`${API_BASE_URL}/notes/published${qs}`, {
+      headers: { ...bearerHeaders() },
+      cache: "no-store",
+    })
+    await throwIfBad(res)
+    return res.json() as Promise<Note[]>
   },
 }

@@ -1,26 +1,6 @@
 import { API_BASE_URL, getAiApiBaseUrl } from "@/config/api"
-import { getAccessToken } from "@/features/auth/cookies"
+import { bearerHeaders, throwIfBad } from "@/features/http"
 import type { GeneratePayload, GenerateResult, GenerationType } from "@/types/note"
-
-function bearerHeaders(): HeadersInit {
-  const token = getAccessToken()
-  if (!token) throw new Error("Not authenticated")
-  return { Authorization: `Bearer ${token}` }
-}
-
-async function throwIfBad(res: Response): Promise<void> {
-  if (res.ok) return
-  let detail = res.statusText
-  try {
-    const body = await res.json()
-    if (typeof body?.detail === "string") detail = body.detail
-    else if (Array.isArray(body?.detail))
-      detail = body.detail.map((x: { msg?: string }) => x?.msg ?? JSON.stringify(x)).join(", ")
-  } catch {
-    /* ignore */
-  }
-  throw new Error(detail || `Request failed (${res.status})`)
-}
 
 const UI_TO_API: Record<string, GenerationType> = {
   Flashcards: "flashcards",

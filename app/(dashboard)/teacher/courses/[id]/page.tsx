@@ -114,6 +114,15 @@ export default function TeacherCoursePage() {
     }
   }
 
+  const handleTogglePublish = async (n: Note) => {
+    try {
+      const updated = await NotesApi.publish(n.id, !n.is_published)
+      setGenerated((prev) => prev.map((g) => (g.id === n.id ? updated : g)))
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : "Failed to update")
+    }
+  }
+
   if (loading) {
     return <DetailSkeleton />
   }
@@ -308,12 +317,26 @@ export default function TeacherCoursePage() {
                       className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50"
                     >
                       <div>
-                        <p className="font-medium text-sm">{n.title}</p>
+                        <p className="font-medium text-sm flex items-center gap-2">
+                          {n.title}
+                          {n.is_published && (
+                            <Badge className="bg-emerald-500/10 text-emerald-700 border-0 text-[10px]">
+                              Assigned to students
+                            </Badge>
+                          )}
+                        </p>
                         <p className="text-xs text-muted-foreground capitalize">
                           {n.kind?.replace("_", " ")} · {fmtDate(n.created_at)}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant={n.is_published ? "secondary" : "default"}
+                          onClick={() => void handleTogglePublish(n)}
+                        >
+                          {n.is_published ? "Unassign" : "Assign to students"}
+                        </Button>
                         <Button asChild size="sm" variant="outline">
                           <Link href={`/notes/${n.id}`}>Open</Link>
                         </Button>

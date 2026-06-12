@@ -42,6 +42,7 @@ export default function StudentCoursePage() {
   const [course, setCourse] = useState<Course | null>(null)
   const [materials, setMaterials] = useState<Material[]>([])
   const [courseNotes, setCourseNotes] = useState<Note[]>([])
+  const [assigned, setAssigned] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -52,15 +53,17 @@ export default function StudentCoursePage() {
       setLoading(true)
       setError(null)
       try {
-        const [c, m, notes] = await Promise.all([
+        const [c, m, notes, published] = await Promise.all([
           CourseApi.getCourse(courseId),
           MaterialApi.list(courseId),
           NotesApi.list(true),
+          NotesApi.listPublished(courseId).catch(() => [] as Note[]),
         ])
         if (!cancelled) {
           setCourse(c)
           setMaterials(m)
           setCourseNotes(notes.filter((n) => n.course_id === courseId))
+          setAssigned(published)
         }
       } catch (e) {
         if (!cancelled) {
@@ -215,10 +218,31 @@ export default function StudentCoursePage() {
           <Card>
             <CardHeader>
               <CardTitle>Assessments</CardTitle>
-              <CardDescription>There is no assessment API wired yet. This list will populate from the backend when available.</CardDescription>
+              <CardDescription>Assignments and quizzes your teacher has assigned to this course.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">No pending assessments.</p>
+              {assigned.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nothing assigned yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {assigned.map((n) => (
+                    <div
+                      key={n.id}
+                      className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50"
+                    >
+                      <div>
+                        <p className="font-medium text-sm">{n.title}</p>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {n.kind?.replace("_", " ")} · {fmtDate(n.created_at)}
+                        </p>
+                      </div>
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/notes/${n.id}`}>Open</Link>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

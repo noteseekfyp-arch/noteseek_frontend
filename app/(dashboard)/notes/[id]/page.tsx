@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { PageHeader } from "@/components/layout/page-header"
 import { PageShell } from "@/components/layout/page-shell"
+import { getUserRole } from "@/features/auth/cookies"
 import { NotesApi } from "@/features/notes/api"
 import type { Note } from "@/types/note"
 import { cn } from "@/lib/utils"
@@ -79,12 +80,24 @@ export default function AINotesPage() {
   const [activeTab, setActiveTab] = useState("content")
   const [downloading, setDownloading] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [role, setRole] = useState<string | null>(null)
 
-  const handleDownloadPdf = async () => {
+  useEffect(() => {
+    setRole(getUserRole())
+  }, [])
+
+  // A published note opened by a student belongs to the teacher — hide
+  // owner-only actions (delete, answer key).
+  const isViewerOwned = !(role === "student" && note?.is_published)
+
+  const handleDownloadPdf = async (withAnswers: boolean = true) => {
     if (!note || downloading) return
     setDownloading(true)
     try {
-      await NotesApi.downloadPdf(note.id, note.title)
+      await NotesApi.downloadPdf(note.id, note.title, {
+        answers: withAnswers,
+        suffix: note.kind === "quiz" ? (withAnswers ? "_answer_key" : "_student_copy") : "",
+      })
     } catch (e) {
       window.alert(e instanceof Error ? e.message : "Download failed")
     } finally {
@@ -133,6 +146,7 @@ export default function AINotesPage() {
 
   const flashcards = note?.metadata?.flashcards ?? []
   const quizQuestions = note?.metadata?.quiz_questions ?? []
+  const assignmentSections = note?.metadata?.assignment_sections ?? []
   const currentCard = flashcards[cardIndex]
 
   if (loading) {
@@ -148,10 +162,8 @@ export default function AINotesPage() {
     return (
       <div className="space-y-4 max-w-xl">
         <p className="text-destructive text-sm">{error ?? "Note not found."}</p>
-        <Button asChild variant="outline" className="rounded-full">
-          <Link href="/student/notes">
-            <ArrowLeft className="size-4 mr-2" /> Back to vault
-          </Link>
+        <Button variant="outline" className="rounded-full" onClick={() => router.back()}>
+          <ArrowLeft className="size-4 mr-2" /> Go back
         </Button>
       </div>
     )
@@ -159,10 +171,13 @@ export default function AINotesPage() {
 
   return (
     <PageShell narrow>
-      <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground rounded-full w-fit">
-        <Link href="/student/notes">
-          <ArrowLeft className="size-4 mr-1" /> Vault
-        </Link>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-2 text-muted-foreground rounded-full w-fit"
+        onClick={() => router.back()}
+      >
+        <ArrowLeft className="size-4 mr-1" /> Back
       </Button>
 
       <PageHeader
@@ -178,34 +193,67 @@ export default function AINotesPage() {
             {note.is_generated && (
               <Badge className="bg-primary/10 text-primary border-0">AI generated</Badge>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full"
-              onClick={() => void handleDownloadPdf()}
-              disabled={downloading}
-            >
-              {downloading ? (
-                <Loader2 className="size-4 mr-1.5 animate-spin" />
-              ) : (
-                <Download className="size-4 mr-1.5" />
-              )}
-              Download PDF
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
-              onClick={() => void handleDelete()}
-              disabled={deleting}
-            >
-              {deleting ? (
-                <Loader2 className="size-4 mr-1.5 animate-spin" />
-              ) : (
-                <Trash2 className="size-4 mr-1.5" />
-              )}
-              Delete
-            </Button>
+            {note.kind === "quiz" ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => void handleDownloadPdf(false)}
+                  disabled={downloading}
+                >
+                  {downloading ? (
+                    <Loader2 className="size-4 mr-1.5 animate-spin" />
+                  ) : (
+                    <Download className="size-4 mr-1.5" />
+                  )}
+                  Student copy
+                </Button>
+                {isViewerOwned && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => void handleDownloadPdf(true)}
+                    disabled={downloading}
+                  >
+                    <Download className="size-4 mr-1.5" />
+                    Answer key
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => void handleDownloadPdf()}
+                disabled={downloading}
+              >
+                {downloading ? (
+                  <Loader2 className="size-4 mr-1.5 animate-spin" />
+                ) : (
+                  <Download className="size-4 mr-1.5" />
+                )}
+                Download PDF
+              </Button>
+            )}
+            {isViewerOwned && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+                onClick={() => void handleDelete()}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <Loader2 className="size-4 mr-1.5 animate-spin" />
+                ) : (
+                  <Trash2 className="size-4 mr-1.5" />
+                )}
+                Delete
+              </Button>
+            )}
           </div>
         }
       />
@@ -244,6 +292,29 @@ export default function AINotesPage() {
               <div className="prose prose-slate max-w-none rounded-xl bg-muted/30 p-6 sm:p-8">
                 {renderMarkdownish(note.content)}
               </div>
+              {assignmentSections.length > 0 && (
+                <div className="mt-5 space-y-3">
+                  <h2 className="text-lg font-semibold">Tasks</h2>
+                  {assignmentSections.map((section, i) => (
+                    <div
+                      key={i}
+                      className="rounded-xl border bg-gradient-to-r from-indigo-500/5 to-transparent p-4"
+                    >
+                      <p className="font-medium text-sm flex items-center gap-2">
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-xs font-bold">
+                          {i + 1}
+                        </span>
+                        {section.heading}
+                      </p>
+                      {section.content && (
+                        <p className="text-sm text-muted-foreground mt-2 leading-relaxed pl-8">
+                          {section.content}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -379,7 +450,7 @@ export default function AINotesPage() {
                       key={j}
                       className={cn(
                         "rounded-lg px-3 py-2 text-sm border",
-                        j === q.correct_index
+                        isViewerOwned && j === q.correct_index
                           ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-800 font-medium"
                           : "bg-muted/30 border-transparent text-muted-foreground"
                       )}
@@ -388,7 +459,7 @@ export default function AINotesPage() {
                       {opt}
                     </div>
                   ))}
-                  {q.explanation && (
+                  {isViewerOwned && q.explanation && (
                     <p className="text-xs text-muted-foreground pt-2 border-t mt-2">{q.explanation}</p>
                   )}
                 </CardContent>

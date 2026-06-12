@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -18,6 +19,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/useAuth"
+import { NotesApi } from "@/features/notes/api"
 
 interface SidebarProps {
   role: "student" | "teacher"
@@ -27,19 +29,41 @@ export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { logout } = useAuth()
+  const [pendingCounts, setPendingCounts] = useState({ assignments: 0, quizzes: 0 })
 
   function handleLogout() {
     logout()
     router.push("/login")
   }
 
+  // Badge counts for published assignments/quizzes (students only).
+  useEffect(() => {
+    if (role !== "student") return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const published = await NotesApi.listPublished()
+        if (cancelled) return
+        setPendingCounts({
+          assignments: published.filter((n) => n.kind === "assignment").length,
+          quizzes: published.filter((n) => n.kind === "quiz").length,
+        })
+      } catch {
+        /* badges are best-effort; ignore failures */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [role, pathname])
+
   const studentNav = [
     { href: "/student", label: "Dashboard", icon: LayoutDashboard },
     { href: "/student/courses", label: "My Courses", icon: GraduationCap },
     { href: "/student/notes", label: "Study Vault", icon: NotebookPen },
     { href: "/student/ai", label: "AI Generator", icon: Sparkles },
-    { href: "/student/assignments", label: "Assignments", icon: ClipboardList },
-    { href: "/student/quizzes", label: "Quizzes", icon: ClipboardCheck },
+    { href: "/student/assignments", label: "Assignments", icon: ClipboardList, badge: pendingCounts.assignments },
+    { href: "/student/quizzes", label: "Quizzes", icon: ClipboardCheck, badge: pendingCounts.quizzes },
   ] as const
 
   const teacherNav = [
@@ -71,6 +95,7 @@ export default function Sidebar({ role }: SidebarProps) {
         {nav.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
           const Icon = item.icon
+          const badge = "badge" in item ? item.badge : 0
           return (
             <Link
               key={item.href}
@@ -91,6 +116,16 @@ export default function Sidebar({ role }: SidebarProps) {
               )}
               <Icon className={cn("relative size-4 shrink-0", isActive && "text-white")} />
               <span className="relative">{item.label}</span>
+              {badge > 0 && (
+                <span
+                  className={cn(
+                    "relative ml-auto min-w-5 h-5 px-1.5 rounded-full text-[11px] font-bold flex items-center justify-center",
+                    isActive ? "bg-white text-indigo-600" : "bg-rose-500 text-white"
+                  )}
+                >
+                  {badge > 99 ? "99+" : badge}
+                </span>
+              )}
             </Link>
           )
         })}

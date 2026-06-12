@@ -27,22 +27,15 @@ export default function Topbar({ role }: TopbarProps) {
         onSubmit={(e) => {
           e.preventDefault()
           const formData = new FormData(e.currentTarget)
-          const query = formData.get("q")
-          if (query) {
-            window.location.href = `/explore?q=${encodeURIComponent(query.toString())}`
-          } else {
-            window.location.href = `/explore`
-          }
+          const query = (formData.get("q") ?? "").toString().trim()
+          router.push(query ? `/explore?q=${encodeURIComponent(query)}` : "/explore")
         }}
       >
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           name="q"
-          placeholder={
-            role === "teacher"
-              ? "Search courses, materials…"
-              : "Search courses, notes…"
-          }
+          type="search"
+          placeholder="Search courses… (press Enter)"
           className="h-9 text-sm rounded-full pl-10 pr-3 glass-input border-transparent shadow-inner focus-visible:ring-primary/30"
         />
       </form>

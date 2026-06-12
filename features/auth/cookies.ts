@@ -1,6 +1,9 @@
+// Keep cookies alive as long as the backend JWT (7 days).
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+
 export function saveToken(token: string, role: string) {
-    document.cookie = `access_token=${token}; path=/`
-    document.cookie = `user_role=${role}; path=/`
+    document.cookie = `access_token=${token}; path=/; max-age=${COOKIE_MAX_AGE}`
+    document.cookie = `user_role=${role}; path=/; max-age=${COOKIE_MAX_AGE}`
 }
 
 export function getAccessToken(): string | null {

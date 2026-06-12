@@ -26,6 +26,7 @@ export interface Note {
   course_id?: string | null
   kind?: string | null
   is_generated: boolean
+  is_published: boolean
   source_material_ids: string[]
   metadata: NoteMetadata
   created_at: string
