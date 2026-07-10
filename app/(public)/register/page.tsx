@@ -109,17 +109,18 @@ export default function RegisterPage() {
         {/* Left: Marketing */}
         <section className="hidden lg:flex flex-col justify-center w-[40%] max-w-xl px-12 xl:px-16 py-12">
           <span className="inline-flex w-fit items-center rounded-md bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-primary">
-            Academic Excellence
+            AI Study Platform
           </span>
           <h2 className="mt-4 text-3xl font-bold leading-tight text-foreground">
-            Elevate your{" "}
+            Turn course materials into{" "}
             <span className="text-primary">
-              learning experience with the community.
+              summaries, flashcards, and quizzes.
             </span>
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Join over 50,000 students and teachers sharing knowledge, notes, and
-            collaborative research tools across the globe.
+            Register as a student or teacher, enroll in courses, upload PDFs and
+            slides, then generate study content grounded in exactly what your
+            class covered — not generic AI filler.
           </p>
 
           <ul className="mt-8 space-y-6">
@@ -128,9 +129,10 @@ export default function RegisterPage() {
                 <Share2 className="size-5" />
               </span>
               <div>
-                <h3 className="font-semibold">Collaborative Notes</h3>
+                <h3 className="font-semibold">RAG from your files</h3>
                 <p className="text-sm text-muted-foreground">
-                  Real-time editing and feedback on academic materials.
+                  Pick specific pages or slides; AI reads your materials before
+                  generating.
                 </p>
               </div>
             </li>
@@ -139,9 +141,10 @@ export default function RegisterPage() {
                 <GraduationCap className="size-5" />
               </span>
               <div>
-                <h3 className="font-semibold">Verified Institutions</h3>
+                <h3 className="font-semibold">Student & teacher roles</h3>
                 <p className="text-sm text-muted-foreground">
-                  Connect specifically with peers from your university.
+                  Teachers publish courses and assignments; students practice with
+                  AI-built quizzes and notes.
                 </p>
               </div>
             </li>
@@ -149,19 +152,20 @@ export default function RegisterPage() {
 
           <div className="mt-10 rounded-xl bg-primary p-6 text-primary-foreground">
             <p className="text-sm leading-relaxed">
-              &ldquo;NoteSeek changed how our study group functions. It&apos;s the
-              central hub for everything we learn.&rdquo;
+              &ldquo;I selected pages 12–14 from our OS slides and got a quiz that
+              actually matched the lecture. Much better than copying ChatGPT
+              answers.&rdquo;
             </p>
             <div className="mt-4 flex items-center gap-3">
               <Avatar className="size-10 border-2 border-primary-foreground/20">
                 <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground">
-                  AR
+                  HK
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">Ayesha Raza</p>
+                <p className="font-medium">Hamza Khan</p>
                 <p className="text-xs text-primary-foreground/80">
-                  Computer Science Student, UMT Lahore
+                  BSCS Student, UMT Lahore
                 </p>
               </div>
             </div>
@@ -196,7 +200,7 @@ export default function RegisterPage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Alex Johnson"
+                    placeholder="e.g. Fatima Ahmed"
                   />
                 </div>
                 <div className="space-y-2">

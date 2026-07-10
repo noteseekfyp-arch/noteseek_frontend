@@ -58,10 +58,10 @@ const STEPS = [
 ]
 
 const STATS = [
-  { value: "10k+", label: "Study materials generated" },
-  { value: "500+", label: "Courses supported" },
-  { value: "98%", label: "Student satisfaction" },
-  { value: "< 30s", label: "Avg. generation time" },
+  { value: "RAG", label: "Grounded in your uploaded PDFs" },
+  { value: "3", label: "Output types — summary, flashcards, quiz" },
+  { value: "Pages", label: "Select exact slides or page ranges" },
+  { value: "Roles", label: "Separate student & teacher workflows" },
 ]
 
 export default function LandingPage() {
@@ -116,7 +116,7 @@ export default function LandingPage() {
                   className="mb-6 py-1.5 px-4 glass-card text-primary font-medium tracking-wide border-primary/20"
                 >
                   <Sparkles className="size-3.5 mr-2 inline" />
-                  Introducing NoteSeek 2.0
+                  AI-powered · retrieval-augmented study tools
                 </Badge>
               </motion.div>
 
@@ -168,9 +168,9 @@ export default function LandingPage() {
               className="mt-16 lg:mt-20 max-w-5xl mx-auto grid sm:grid-cols-3 gap-4"
             >
               {[
-                { icon: FileText, label: "Smart Summaries", stat: "2,400+ generated", color: "text-blue-600" },
-                { icon: Zap, label: "Flashcards", stat: "8,100+ created", color: "text-violet-600" },
-                { icon: Trophy, label: "Practice Quizzes", stat: "1,200+ taken", color: "text-indigo-600" },
+                { icon: FileText, label: "Smart Summaries", stat: "Condense lectures into key points", color: "text-blue-600" },
+                { icon: Zap, label: "Flashcards", stat: "Built from your chosen context", color: "text-violet-600" },
+                { icon: Trophy, label: "Practice Quizzes", stat: "Teachers assign · students review", color: "text-indigo-600" },
               ].map((item) => (
                 <div
                   key={item.label}
@@ -443,26 +443,26 @@ export default function LandingPage() {
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Loved by students & educators</h2>
-              <p className="text-muted-foreground text-lg">Real feedback from classrooms using NoteSeek.</p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Built for real classrooms</h2>
+              <p className="text-muted-foreground text-lg">How students and teachers use NoteSeek day to day.</p>
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {[
                 {
-                  quote: "I generated flashcards from just the slides my professor covered last week. Saved me hours of manual work.",
-                  name: "Sarah M.",
-                  role: "Computer Science Student",
+                  quote: "I uploaded my Data Structures notes, picked the heap-sort section, and got flashcards that matched our midterm scope.",
+                  name: "Ayesha R.",
+                  role: "BSCS Student, UMT",
                 },
                 {
-                  quote: "Creating quizzes from my lecture decks used to take an entire afternoon. Now it takes minutes.",
-                  name: "Dr. James Chen",
-                  role: "Biology Professor",
+                  quote: "I publish assignments from selected lecture slides instead of writing every question by hand. Grading stays in one dashboard.",
+                  name: "Dr. Usman Ali",
+                  role: "Software Engineering Faculty",
                 },
                 {
-                  quote: "The context selection is a game-changer. No more irrelevant AI summaries from chapters we haven't covered.",
-                  name: "Alex R.",
-                  role: "Engineering Student",
+                  quote: "Page-range selection means the AI only uses what we actually taught — not random chapters from the PDF.",
+                  name: "Bilal H.",
+                  role: "Final-year CS Student",
                 },
               ].map((t, i) => (
                 <motion.div
@@ -508,7 +508,7 @@ export default function LandingPage() {
               <div className="relative">
                 <div className="inline-flex items-center gap-2 mb-4 text-primary">
                   <Users className="size-5" />
-                  <span className="text-sm font-semibold">Join thousands of learners</span>
+                  <span className="text-sm font-semibold">Free for students & teachers</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">
                   Ready to transform how you study?
