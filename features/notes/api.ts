@@ -8,8 +8,9 @@ export const NotesApi = {
     if (generatedOnly === true) params.set("generated_only", "true")
     else if (generatedOnly === false) params.set("generated_only", "false")
     const qs = params.toString()
-    // Trailing slash avoids FastAPI 307 redirect (redirect drops Authorization via Next proxy).
-    const url = qs ? `${API_BASE_URL}/notes/?${qs}` : `${API_BASE_URL}/notes/`
+    // No trailing slash — FastAPI route is /notes; /notes/ 307-redirects and Railway
+    // may rewrite Location to http://, which browsers block as mixed content on HTTPS pages.
+    const url = qs ? `${API_BASE_URL}/notes?${qs}` : `${API_BASE_URL}/notes`
     const res = await fetch(url, {
       headers: { ...bearerHeaders() },
       cache: "no-store",
